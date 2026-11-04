@@ -5,6 +5,9 @@ Sürümün tek kaynağı `package.json`; `.dmg` adı ve Hakkında penceresi orad
 
 ## [Yayımlanmadı]
 
+### Değişti
+- İmzalı sürümde `.dmg`'ler de imzalanıp notarize ediliyor (`scripts/notarize-dmg.mjs`); bağımlılıkların kaynak haritaları (`.map`) artık pakete girmiyor.
+
 ### Eklendi
 - **Session'ı kapat:** detay panelinde ve terminal çubuğunda. Çalışan arka plan session'ı `claude stop` ile durdurulur; bitmiş ya da uyuyan session yalnızca haritadan kaldırılır (uygulama hatırlar). Konuşma silinmez, `claude attach <id>` ile dönülebilir; session yeniden çalışırsa haritaya geri gelir. İki adımlı onay.
 - **Geçmiş:** üst bardaki saat ikonu haritada olmayan arka plan session'larını listeler (kapatılan, durdurulan, başarısız, 24 saatten eski); ada, klasöre ya da kimliğe göre aranır. "Aktif et" session'ı haritaya geri getirir ve gömülü terminalde açar; "Kopyala" `claude attach <id>` komutunu kopyalar.

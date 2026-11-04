@@ -9,6 +9,8 @@ directories:
 files:
   - out/**
   - "!out/**/*.map"
+  # Bağımlılıkların kaynak haritaları da girmez (xterm, tanstack … paket içinde ~30 .map dosyası bırakıyordu).
+  - "!**/node_modules/**/*.map"
   - package.json
 # 07/01: node-pty native modülü (pty.node + spawn-helper) asar içinden çalıştırılamaz; asar dışına açılır.
 # node-pty yolu kendisi app.asar → app.asar.unpacked olarak düzeltir. spawn-helper'ın çalıştırma izni

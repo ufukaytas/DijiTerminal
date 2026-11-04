@@ -65,6 +65,7 @@ async function checkConfig() {
   check(
     files.includes('out/**') &&
       files.includes('package.json') &&
+      files.includes('!**/node_modules/**/*.map') &&
       files.filter((/** @type {string} */ f) => !f.startsWith('!')).length === 2,
     `files yalnızca out/** + package.json (${files.join(', ')})`,
   );

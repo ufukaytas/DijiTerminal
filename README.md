@@ -35,7 +35,7 @@ APPLE_KEYCHAIN_PROFILE=dijiterminal \
 npm run dist:signed
 ```
 
-`dist:signed` hardened runtime ve `build/entitlements.mac.plist` ile imzalar; electron-builder notarize edip bileti staple eder. Doğrulama: `spctl -a -vv release/mac-arm64/DijiTerminal.app` → `source=Notarized Developer ID`.
+`dist:signed` uygulamayı hardened runtime ve `build/entitlements.mac.plist` ile imzalar; electron-builder uygulamayı notarize edip bileti ekler. Ardından `.dmg`'ler de imzalanır ve `scripts/notarize-dmg.mjs` onları notarize edip bileti ekler (yalnızca dmg adımını tekrarlamak için: `npm run dist:notarize-dmg`). Doğrulama: `spctl -a -vv release/mac-arm64/DijiTerminal.app` → `source=Notarized Developer ID`.
 
 ## Geliştirme kurulumu
 
@@ -56,7 +56,8 @@ npm run dev        # uygulamayı geliştirme modunda açar
 | `npm run dist` | `release/` altında arm64 + x64 .dmg ve arm64 .zip (ad-hoc imzalı); `build:mac` aynı |
 | `npm run dist:universal` | Tek universal .dmg |
 | `npm run dist:dir` | Yalnızca `.app` klasörü (hızlı paket denemesi) |
-| `npm run dist:signed` | Developer ID ile imza + hardened runtime (`CSC_NAME`) |
+| `npm run dist:signed` | Developer ID ile imza + hardened runtime (`CSC_NAME`); `APPLE_KEYCHAIN_PROFILE` varsa uygulama ve .dmg notarize edilir |
+| `npm run dist:notarize-dmg` | `release/` altındaki imzalı .dmg'leri notarize edip bileti ekler |
 | `npm run dist:check` | Paketleme yapılandırmasını doğrular; Mac'te `-- --app release/mac-arm64/DijiTerminal.app` ile paketi de denetler |
 | `npm run icon` | `build/icon.svg` → `build/icon.png` + `build/icon.icns` |
 | `npm run icon:tray` | Menü çubuğu ikonlarını (`resources/tray/*Template.png`) üretir; `-- --preview <png>` önizleme |

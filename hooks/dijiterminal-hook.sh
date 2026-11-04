@@ -37,7 +37,8 @@ parse_perl() {
 }
 
 jget_fallback() {
-  v=$(printf '%s' "$INPUT" | /usr/bin/plutil -extract "$1" raw -o - - 2>/dev/null)
+  # plutil hata metnini (bozuk JSON, eksik anahtar) stdout'a yazar; yalnızca çıkış kodu 0 ise değer say.
+  v=$(printf '%s' "$INPUT" | /usr/bin/plutil -extract "$1" raw -o - - 2>/dev/null) || v=
   if [ -z "$v" ]; then
     v=$(printf '%s' "$INPUT" | sed -n -E "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"(([^\"\\\\]|\\\\.)*)\".*/\\1/p" | head -n 1 \
         | sed -e 's/\\"/"/g' -e 's/\\\\/\\/g')

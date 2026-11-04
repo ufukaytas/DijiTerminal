@@ -60,7 +60,9 @@ section "Girdi hatırlatması bildirim üretmez"
 reset
 n Notification "$SID" /tmp/x "" "Claude is waiting for your input"
 check "hatırlatma → çağrı yok" [ "$(ncalls)" = 0 ]
-NOTIFY_TYPE=idle_prompt n Notification "$SID" /tmp/x "" "$PERM"
+# Alt kabuk şart: macOS /bin/sh (bash, POSIX kipi) fonksiyon çağrısından önceki atamayı kalıcı yapar;
+# yoksa NOTIFY_TYPE sonraki tüm testlere sızar ve izin bildirimlerini susturur.
+(NOTIFY_TYPE=idle_prompt n Notification "$SID" /tmp/x "" "$PERM")
 check "notification_type=idle_prompt → çağrı yok" [ "$(ncalls)" = 0 ]
 
 section "Tur bitti: kısa turlar bastırılır"
@@ -80,7 +82,9 @@ check "SessionEnd durum dosyalarını temizledi" sh -c "! ls '$DATA/state' | gre
 
 section "Uygulama açıkken susar"
 reset
-cp /bin/sleep "$DATA/Electron"
+# Kopya değil sembolik bağ: kopyalanan /bin/sleep macOS'ta imza denetiminde SIGKILL ile ölür
+# ve test boşuna geçer. Bağla başlatılan sürecin `ps -o comm=` değeri yine .../Electron olur.
+ln -s /bin/sleep "$DATA/Electron"
 "$DATA/Electron" 30 & APP_PID=$!
 printf '{"pid":%d,"startedAt":%d}\n' "$APP_PID" "$(date +%s)" > "$DATA/app.lock"
 n Notification "$SID" /tmp/x "" "$PERM"

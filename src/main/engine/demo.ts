@@ -25,10 +25,10 @@ interface DemoProject {
 }
 
 const PROJECTS: DemoProject[] = [
-  { name: 'ufukaytas', color: '#F0A6CA', emblem: 'team', team: ['audience-seo-researcher', 'pipeline-linkedin-writer', 'ventures-skool-planner', 'audience-trend-scout'] },
-  { name: 'youcontent360', color: '#7DD3C0', emblem: 'ring' },
-  { name: 'youcms', color: '#A5B4FC', emblem: 'stack' },
-  { name: 'livekit-demo', color: '#C4E17F', emblem: 'wave' },
+  { name: 'platform', color: '#F0A6CA', emblem: 'team', team: ['test-runner', 'code-reviewer', 'docs-writer', 'perf-profiler'] },
+  { name: 'billing-api', color: '#7DD3C0', emblem: 'ring' },
+  { name: 'storefront', color: '#A5B4FC', emblem: 'stack' },
+  { name: 'voice-agent', color: '#C4E17F', emblem: 'wave' },
 ];
 
 interface SessionSeed {
@@ -40,18 +40,18 @@ interface SessionSeed {
 }
 
 const SESSIONS: SessionSeed[] = [
-  { project: 'ufukaytas', cwd: P('ufukaytas'), name: 'HQ', title: 'Haftalık içerik planı', model: 'claude-opus-5-5' },
-  { project: 'youcontent360', cwd: P('youcontent360'), name: 'seo-api', title: 'SEO skor API refaktörü', model: 'claude-opus-5-5' },
-  { project: 'youcms', cwd: P('youcms'), name: 'youcms', title: 'Blok editörü önbellek', model: 'claude-sonnet-5-5' },
-  { project: 'youcms', cwd: `${P('youcms')}/.claude/worktrees/ui`, name: 'ui', title: 'Kart bileşenleri', model: 'claude-sonnet-5-5' },
-  { project: 'livekit-demo', cwd: P('livekit-demo'), name: 'diji-voice', title: 'VAD eşik ayarı', model: 'claude-opus-5-5' },
+  { project: 'platform', cwd: P('platform'), name: 'core', title: 'Monorepo bağımlılık yükseltmesi', model: 'claude-opus-5-5' },
+  { project: 'billing-api', cwd: P('billing-api'), name: 'invoices', title: 'Fatura API refaktörü', model: 'claude-opus-5-5' },
+  { project: 'storefront', cwd: P('storefront'), name: 'storefront', title: 'Ürün sayfası önbelleği', model: 'claude-sonnet-5-5' },
+  { project: 'storefront', cwd: `${P('storefront')}/.claude/worktrees/ui`, name: 'ui', title: 'Kart bileşenleri', model: 'claude-sonnet-5-5' },
+  { project: 'voice-agent', cwd: P('voice-agent'), name: 'voice', title: 'VAD eşik ayarı', model: 'claude-opus-5-5' },
 ];
 
 const AGENT_DESC: Record<string, string[]> = {
-  'audience-seo-researcher': ['anahtar kelime taraması', 'rakip içerik analizi'],
-  'pipeline-linkedin-writer': ['linkedin taslağı', 'gönderi düzeltmesi'],
-  'ventures-skool-planner': ['skool modül planı'],
-  'audience-trend-scout': ['trend araştırması'],
+  'test-runner': ['birim testleri', 'entegrasyon testleri'],
+  'code-reviewer': ['PR incelemesi', 'güvenlik taraması'],
+  'docs-writer': ['API dokümantasyonu'],
+  'perf-profiler': ['bundle boyutu analizi'],
   Explore: ['kod tabanı keşfi', 'test kapsamı incelemesi'],
 };
 
@@ -79,10 +79,10 @@ const TOOLS: ToolTpl[] = [
 ];
 
 const FILES: Record<string, string[]> = {
-  ufukaytas: ['content/plan.md', 'drafts/post.md', 'research/keywords.csv', 'agents/brief.md'],
-  youcontent360: ['src/api/score.ts', 'src/api/score.test.ts', 'src/lib/cache.ts', 'prisma/schema.prisma'],
-  youcms: ['lib/types.ts', 'components/Card.tsx', 'components/Block.tsx', 'lib/cache.ts'],
-  'livekit-demo': ['agent/vad.py', 'agent/config.yaml', 'tests/test_vad.py'],
+  platform: ['package.json', 'packages/ui/package.json', 'pnpm-lock.yaml', 'turbo.json'],
+  'billing-api': ['src/api/invoices.ts', 'src/api/invoices.test.ts', 'src/lib/cache.ts', 'prisma/schema.prisma'],
+  storefront: ['lib/types.ts', 'components/Card.tsx', 'components/Block.tsx', 'lib/cache.ts'],
+  'voice-agent': ['agent/vad.py', 'agent/config.yaml', 'tests/test_vad.py'],
 };
 
 /** Deterministik küçük RNG (mulberry32). */
@@ -314,7 +314,7 @@ export class DemoEngine implements BoardEngine {
           const team = PROJECTS.find((p) => p.name === s.seed.project)?.team;
           if (team && s.agents.length < 3 && this.rand() < 0.25) {
             await this.spawn(s, team, now);
-          } else if (this.rand() < 0.08 && s.seed.project !== 'ufukaytas') {
+          } else if (this.rand() < 0.08 && s.seed.project !== 'platform') {
             // Onay bekleyen Bash
             const id = this.callId();
             const tpl = TOOLS.find((t) => t.name === 'Bash') as ToolTpl;
@@ -385,7 +385,7 @@ export class DemoEngine implements BoardEngine {
 
   private pickFile(s: SimSession): string {
     const list = FILES[s.seed.project] ?? ['README.md'];
-    // youcms: iki session aynı dosyayı düzenleyebilir → ara sıra çakışma.
+    // storefront: iki session aynı dosyayı düzenleyebilir → ara sıra çakışma.
     return `${P(s.seed.project)}/${this.pick(list)}`;
   }
 

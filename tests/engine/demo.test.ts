@@ -33,14 +33,14 @@ describe('DemoEngine', () => {
     const { e, events, snaps, statuses, teams } = await simulate(240);
     const snap = e.getSnapshot();
     expect(snaps[0]?.booted).toBe(true);
-    expect(snap.projects.map((p) => p.name).sort()).toEqual(['livekit-demo', 'ufukaytas', 'youcms', 'youcontent360']);
+    expect(snap.projects.map((p) => p.name).sort()).toEqual(['billing-api', 'platform', 'storefront', 'voice-agent']);
     expect(snap.sessions).toHaveLength(5);
     const types = new Set(events.map((x) => x.type));
     for (const t of ['tool-start', 'tool-end', 'status', 'prompt', 'agent-spawn', 'agent-done', 'file-touch']) expect(types.has(t as BoardEvent['type']), t).toBe(true);
     expect(statuses.has('waiting')).toBe(true);
     expect(statuses.has('idle')).toBe(true);
     expect([...teams].length).toBeGreaterThan(0);
-    const team = snap.projects.find((p) => p.name === 'ufukaytas');
+    const team = snap.projects.find((p) => p.name === 'platform');
     expect(team).toMatchObject({ emblem: 'team', color: '#F0A6CA', tag: 'agent takımı' });
     expect(snap.totals.costTodayUsd).toBeGreaterThan(0);
     expect(read).not.toHaveBeenCalled();

@@ -6,10 +6,11 @@
  * @typedef {'active' | 'idle' | 'big' | 'soak'} Scenario
  * @typedef {{
  *   key: string, label: string, limit: number, unit: string, cmp: '<' | '>=',
+ *   info?: boolean,
  *   scenarios: Scenario[], modes: ('app'|'headless')[],
  *   value: (r: any) => number | null,
  * }} BudgetRule
- * @typedef {{ key: string, label: string, value: number | null, limit: number, unit: string, cmp: '<' | '>=', status: 'ok' | 'fail' | 'n/a', note?: string }} BudgetRow
+ * @typedef {{ key: string, label: string, value: number | null, limit: number, unit: string, cmp: '<' | '>=', status: 'ok' | 'fail' | 'n/a' | 'info', note?: string }} BudgetRow
  */
 
 /** @param {any} r @param {'visible'|'hidden'} name */
@@ -63,11 +64,29 @@ export const BUDGET = [
     value: (r) => num(cpuTotal(phase(r, 'hidden')?.avg)),
   },
   {
-    key: 'rssTotal',
-    label: 'Toplam RSS (main + renderer + GPU), p95, Dengeli kalite',
+    // Bellek bütçesi phys_footprint ile (Etkinlik Monitörü'nün "Bellek" sütunu). RSS, Electron Framework'ün
+    // paylaşılan sayfalarını her süreçte ayrı saydığı için gerçek maliyeti abartır (karar 2026-10-28).
+    key: 'footprintTotal',
+    label: 'Toplam bellek (phys_footprint, tüm süreçler), p95',
     limit: 350,
     unit: 'MB',
     cmp: '<',
+    scenarios: ['active', 'idle', 'soak'],
+    modes: ['app'],
+    value: (r) => {
+      const v = (r.phases ?? [])
+        .map((/** @type {any} */ p) => p.p95.footprintMb)
+        .filter((/** @type {unknown} */ x) => typeof x === 'number');
+      return v.length ? Math.max(...v) : null;
+    },
+  },
+  {
+    key: 'rssTotal',
+    label: 'Toplam RSS (main + renderer + GPU), p95 — bilgi',
+    limit: 350,
+    unit: 'MB',
+    cmp: '<',
+    info: true,
     scenarios: ['active', 'idle', 'soak'],
     modes: ['app'],
     value: (r) => {
@@ -169,7 +188,9 @@ export function evaluate(report, scenario) {
   for (const b of BUDGET) {
     if (!b.scenarios.includes(scenario) || !b.modes.includes(mode)) continue;
     const value = b.value(report);
-    const status = value === null ? 'n/a' : (b.cmp === '<' ? value < b.limit : value >= b.limit) ? 'ok' : 'fail';
+    const pass = value !== null && (b.cmp === '<' ? value < b.limit : value >= b.limit);
+    // Bilgi satırı (info) aşımda kırmızı olmaz ve exit kodunu etkilemez.
+    const status = value === null ? 'n/a' : pass ? 'ok' : b.info ? 'info' : 'fail';
     /** @type {BudgetRow} */
     const row = { key: b.key, label: b.label, value, limit: b.limit, unit: b.unit, cmp: b.cmp, status };
     if (value === null) row.note = 'ölçülemedi';
@@ -197,12 +218,19 @@ function fmt(v, unit) {
  */
 export function formatTable(rows, o = {}) {
   const color = o.color ?? false;
-  const paint = (/** @type {string} */ s, /** @type {'ok'|'fail'|'n/a'} */ st) =>
+  const paint = (/** @type {string} */ s, /** @type {'ok'|'fail'|'n/a'|'info'} */ st) =>
     !color ? s : st === 'ok' ? `\x1b[32m${s}\x1b[0m` : st === 'fail' ? `\x1b[31m${s}\x1b[0m` : `\x1b[2m${s}\x1b[0m`;
   const w = Math.max(10, ...rows.map((r) => r.label.length));
   const lines = [`${'Metrik'.padEnd(w)}  ${'Değer'.padStart(10)}  ${'Hedef'.padStart(12)}  Durum`];
   for (const r of rows) {
-    const mark = r.status === 'ok' ? '✓' : r.status === 'fail' ? '✗ AŞIM' : '· ölçülemedi';
+    const mark =
+      r.status === 'ok'
+        ? '✓'
+        : r.status === 'fail'
+          ? '✗ AŞIM'
+          : r.status === 'info'
+            ? '· bilgi (sınır üstü)'
+            : '· ölçülemedi';
     const target = `${r.cmp} ${fmt(r.limit, r.unit)}`;
     lines.push(
       paint(`${r.label.padEnd(w)}  ${fmt(r.value, r.unit).padStart(10)}  ${target.padStart(12)}  ${mark}`, r.status),

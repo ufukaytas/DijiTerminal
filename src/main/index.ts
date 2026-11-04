@@ -23,7 +23,7 @@ import { acquireSingleInstance, removeAppLock, writeAppLock } from './lock';
 import { applyLoginItem, wasOpenedAtLogin } from './loginItem';
 import { buildMenuTemplate } from './menu';
 import { Notifier } from './os/notify';
-import { sanitizeRendererSample, startPerfFromEnv, type PerfSampler } from './perf';
+import { macFootprint, sanitizeRendererSample, startPerfFromEnv, type PerfSampler } from './perf';
 import { TerminalFocuser } from './os/iterm';
 import { conflictMessage, ShortcutManager } from './os/shortcuts';
 import { SettingsStore } from './settings';
@@ -154,7 +154,8 @@ function applyShortcuts(): void {
   if (msg && msg !== lastConflict) {
     const w = currentWindow();
     // İlk açılışta renderer henüz yüklenmemiş olabilir: yüklenince göster.
-    if (w && w.webContents.isLoading()) w.webContents.once('did-finish-load', () => send('app:toast', { level: 'warn', message: msg }));
+    if (w && w.webContents.isLoading())
+      w.webContents.once('did-finish-load', () => send('app:toast', { level: 'warn', message: msg }));
     else send('app:toast', { level: 'warn', message: msg });
   }
   lastConflict = msg;
@@ -218,7 +219,9 @@ function applyDock(s: AppSettings): void {
 function applyMenuBar(s: AppSettings): void {
   if (!host) return;
   if (s.menuBar.enabled && !tray) {
-    const iconDir = app.isPackaged ? path.join(process.resourcesPath, 'tray') : path.join(app.getAppPath(), 'resources/tray');
+    const iconDir = app.isPackaged
+      ? path.join(process.resourcesPath, 'tray')
+      : path.join(app.getAppPath(), 'resources/tray');
     tray = new TrayController({
       engine: host.engine,
       createTray: () => createElectronTray(iconDir),
@@ -260,7 +263,8 @@ function handlers(): Partial<IpcHandlers> {
     }),
     ...createSettingsHandlers({
       get: getSettings,
-      set: (patch) => (settings ? settings.set(patch) : { ok: false, error: { code: 'INTERNAL', message: 'Ayarlar hazır değil.' } }),
+      set: (patch) =>
+        settings ? settings.set(patch) : { ok: false, error: { code: 'INTERNAL', message: 'Ayarlar hazır değil.' } },
       pickDirectory: async () => {
         const opts: Electron.OpenDialogOptions = {
           title: 'Claude klasörünü seçin',
@@ -275,7 +279,8 @@ function handlers(): Partial<IpcHandlers> {
     ...createHookHandlers({
       installer: hookInstaller,
       configDir: () => current?.claudeConfigDir ?? null,
-      sourceDir: () => (app.isPackaged ? path.join(process.resourcesPath, 'hooks') : path.join(app.getAppPath(), 'hooks')),
+      sourceDir: () =>
+        app.isPackaged ? path.join(process.resourcesPath, 'hooks') : path.join(app.getAppPath(), 'hooks'),
     }),
     ...createActionHandlers({
       projectRoot: (id) => host?.engine.getSnapshot().projects.find((p) => p.id === id)?.root ?? null,
@@ -301,7 +306,8 @@ function handlers(): Partial<IpcHandlers> {
     ...createToastActionHandlers({ openExternal: (url) => shell.openExternal(url) }),
     'shortcuts:status': async () => ok(shortcuts ? shortcuts.report() : { enabled: false, items: [] }),
     'tray:command': async (cmd: TrayCommand, sessionId?: string) => {
-      if (!TRAY_COMMANDS.includes(cmd)) return { ok: false, error: { code: 'BAD_INPUT', message: 'Bilinmeyen komut.' } };
+      if (!TRAY_COMMANDS.includes(cmd))
+        return { ok: false, error: { code: 'BAD_INPUT', message: 'Bilinmeyen komut.' } };
       if (!tray) return { ok: false, error: { code: 'NOT_FOUND', message: 'Menü çubuğu kapalı.' } };
       return tray.command(cmd, sessionId);
     },
@@ -370,8 +376,17 @@ if (acquireSingleInstance(app, showWindow)) {
     loadSettings();
     // Kilit yalnızca uygulama gerçekten bildirim gösterebiliyorsa: yoksa Faz 1 hook'ları susar ve hiç bildirim gelmez.
     if (APP_OWNS_NOTIFICATIONS && Notification.isSupported()) writeAppLock(dataDir());
-    cli = new ClaudeCli({ settingsPath: () => current?.terminal.claudePath ?? null, configDir: () => current?.claudeConfigDir ?? null, fake: FAKE_TERMINAL });
-    host = createEngineHost({ getWindow: currentWindow, configDir: current?.claudeConfigDir ?? null, settings: getSettings, cli }); // DIJI_DEMO=1 → DemoEngine
+    cli = new ClaudeCli({
+      settingsPath: () => current?.terminal.claudePath ?? null,
+      configDir: () => current?.claudeConfigDir ?? null,
+      fake: FAKE_TERMINAL,
+    });
+    host = createEngineHost({
+      getWindow: currentWindow,
+      configDir: current?.claudeConfigDir ?? null,
+      settings: getSettings,
+      cli,
+    }); // DIJI_DEMO=1 → DemoEngine
     terminals = createTerminalHost({
       cli,
       engine: () => host?.engine ?? null,
@@ -380,7 +395,11 @@ if (acquireSingleInstance(app, showWindow)) {
       demo: host.demo,
       spawn: FAKE_TERMINAL ? fakePtySpawn : nodePtySpawn,
       pickDirectory: async () => {
-        const opts: Electron.OpenDialogOptions = { title: 'Yeni oturum için proje klasörü', defaultPath: os.homedir(), properties: ['openDirectory'] };
+        const opts: Electron.OpenDialogOptions = {
+          title: 'Yeni oturum için proje klasörü',
+          defaultPath: os.homedir(),
+          properties: ['openDirectory'],
+        };
         const w = currentWindow();
         const r = w ? await dialog.showOpenDialog(w, opts) : await dialog.showOpenDialog(opts);
         return r.canceled ? null : (r.filePaths[0] ?? null);
@@ -395,7 +414,7 @@ if (acquireSingleInstance(app, showWindow)) {
       setTimeout(() => {
         const s = host?.engine.getSnapshot().sessions.find((x) => x.background);
         if (s) sendWhenReady('ui:openInApp', { sessionId: s.id });
-        else console.warn('[bench] arka plan session\'ı yok; terminal açılmadı');
+        else console.warn("[bench] arka plan session'ı yok; terminal açılmadı");
       }, openAt).unref?.();
     }
     // Menü çubuğu ve Dock tercihi pencereden önce: Dock gizliyse açılışta Dock'ta ikon belirip kaybolmasın.
@@ -410,6 +429,7 @@ if (acquireSingleInstance(app, showWindow)) {
     perfSampler = startPerfFromEnv(h.engine, {
       isPackaged: app.isPackaged,
       getAppMetrics: () => app.getAppMetrics(),
+      footprint: macFootprint,
       quit: () => app.quit(),
       visibility: () => {
         const w = currentWindow();
@@ -417,7 +437,9 @@ if (acquireSingleInstance(app, showWindow)) {
       },
       hideWindow: () => currentWindow()?.hide(),
       onWillQuit: (cb) => app.on('will-quit', cb),
-      bytesRead: () => (h.engine as { internals?: { pool: { stats(): { bytesRead: number } } } }).internals?.pool.stats().bytesRead ?? 0,
+      bytesRead: () =>
+        (h.engine as { internals?: { pool: { stats(): { bytesRead: number } } } }).internals?.pool.stats().bytesRead ??
+        0,
     });
     // Menü çubuğu listesi de bir pencere olduğundan "hiç pencere yok" yerine ana pencereye bakılır.
     app.on('activate', () => {

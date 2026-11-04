@@ -10,7 +10,8 @@ DijiTerminal gün boyu ikinci monitörde açık kalır; izlediği Claude Code se
 | 4 aktif session (replay ×5), main | < %5 | `npm run bench` |
 | 4 aktif session, renderer (3B dahil) | < %15 | `npm run bench` |
 | Pencere gizli, 4 aktif session, toplam | < %1 | `npm run bench:hidden` |
-| Toplam RSS (main + renderer + GPU) | < 350 MB | `npm run bench` |
+| Toplam bellek (`phys_footprint`, tüm süreçler) | < 350 MB (gözden geçiriliyor, aşağıya bkz.) | `npm run bench` |
+| Toplam RSS (main + renderer + GPU) | bilgi satırı | `npm run bench` |
 | İlk snapshot, 500 MB günlük transcript | < 1.5 sn | `npm run bench:big` |
 | Snapshot boyutu | < 200 KB | `npm run bench` |
 | 3B harita, görünür ve aktif | ≥ 50 fps | `npm run dev` + `?debug=1` (otomatik ölçüm yok, aşağıya bkz.) |
@@ -52,4 +53,17 @@ npm run bench:headless # Electron/GPU olmadan yalnızca motor (CI, konteyner)
 
 Gizli fazdaki aşımın nedeni: motor `background` tempoda snapshot yayınını seyrekleştiriyor ama olay akışı (≈6 olay/sn) aynı kalıyor. Brief'teki "gizliyken yalnızca `status` olayları" kuralı motorda henüz yok. Mac ölçümü bekleniyor.
 
-**Mac (M3) ölçümü:** henüz yok — `npm run bench`, `bench:hidden`, `bench:big`, `bench:soak` sonuçlarını buraya ekleyin.
+**2026-11-05, MacBook Pro M3 Pro 18 GB, uygulama modu, Dengeli kalite**
+
+| Metrik | Değer | Hedef |
+|--------|-------|-------|
+| 4 aktif session, main / renderer CPU | %0.2 / %1.7 | < %5 / < %15 ✓ |
+| 3B harita, aktif | 60 fps | ≥ 50 ✓ |
+| Snapshot (en büyük) | 77 KB | < 200 KB ✓ |
+| İlk snapshot, 500 MB sentetik (`bench:big`) | 822 ms | < 1.5 sn ✓ |
+| Toplam RSS p95 (bilgi) | 396 MB | — |
+| Toplam bellek (`phys_footprint`) p95, 180 sn | 589 MB | < 350 MB ✗ |
+
+Bellek kırılımı (footprint, 180 sn aktif): main 51 → 63 MB, renderer 82 → 184 MB (yükseliyor), **GPU 325–405 MB**, diğer 7 MB. GPU payı harita boştayken (4 fps, `bench:big`) de 335 MB; yani yükle değil WebGL çizim tamponlarıyla (Metal/IOSurface) ilgili sabit bir taban. Bu tamponlar RSS'te görünmez; bu yüzden eski RSS ölçümü belleği düşük gösteriyordu.
+
+Ölçü değişikliği: `footprint` aracı (`/usr/bin/footprint`) yalnızca `DIJI_PERF=1` açıkken 5 sn'de bir çağrılır; `[perf]` satırı ve rapor `footprintMb` + `footprintParts` (main/renderer/GPU/diğer) içerir. Bütçe satırı footprint'le değerlendirilir; RSS bilgi satırıdır, exit kodunu etkilemez.

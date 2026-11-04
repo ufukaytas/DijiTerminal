@@ -1,6 +1,7 @@
 // Performans örnekleyici (05/02). Electron'a doğrudan bağlı değil: süreç metrikleri, motor ve pencere
 // dışarıdan verilir; böylece hem uygulamada (app.getAppMetrics) hem başsız benchmark'ta (process.cpuUsage)
 // aynı toplama/özet kodu çalışır. Rapor yalnızca sayı içerir; session adı ya da yol yazılmaz.
+import { execFile } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -12,6 +13,7 @@ export type Visibility = 'visible' | 'occluded' | 'hidden';
 /** Electron `ProcessMetric`'inin kullandığımız alt kümesi. */
 export interface ProcessMetricLike {
   type: string; // 'Browser' (main) | 'Tab' (renderer) | 'GPU' | 'Utility' …
+  pid?: number;
   cpu: { percentCPUUsage: number };
   memory: { workingSetSize: number }; // KB
 }
@@ -20,6 +22,14 @@ export interface PerfSample {
   at: number;
   cpu: { main: number; renderer: number; gpu: number | null }; // yüzde (tek çekirdek = 100)
   rssMb: { main: number; renderer: number; gpu: number | null; total: number };
+  /**
+   * Tüm uygulama süreçlerinin `phys_footprint` toplamı (MB) — Etkinlik Monitörü'nün "Bellek" sütunu.
+   * RSS, Electron Framework'ün paylaşılan sayfalarını her süreçte ayrı sayar; bellek bütçesi bununla ölçülür.
+   * Ölçülemediyse (macOS dışı, başsız mod, henüz örnek yok) null.
+   */
+  footprintMb: number | null;
+  /** Footprint'in süreç tipine göre kırılımı (MB); footprintMb null ise null. */
+  footprintParts?: { main: number; renderer: number; gpu: number; other: number } | null;
   snapshotBytes: number;
   eventsPerSec: number;
   bytesReadPerSec: number;
@@ -123,6 +133,10 @@ export interface PerfSamplerOptions {
   engine?: EngineLike | null;
   /** Okunan toplam transcript baytı (TranscriptPool.stats().bytesRead); yoksa 0. */
   bytesRead?: () => number;
+  /** pid → phys_footprint (bayt). Uygulamada `/usr/bin/footprint`; yoksa footprint ölçülmez. */
+  footprint?: ((pids: number[]) => Promise<Map<number, number> | null>) | null;
+  /** Footprint kaç örnekte bir yenilenir (varsayılan 5: 1 sn aralıkla 5 sn). */
+  footprintEvery?: number;
   visibility?: () => Visibility;
   now?: () => number;
   machine?: MachineInfo;
@@ -181,6 +195,70 @@ export function aggregateMetrics(list: ProcessMetricLike[]): Pick<PerfSample, 'c
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
+/**
+ * `footprint --noCategories -f bytes <pid…>` çıktısı → pid → phys_footprint (bayt).
+ * Bölüm başlığı `Ad [pid]: …`, değer satırı `phys_footprint: N B`. Tanınmayan satırlar yok sayılır.
+ */
+export function parseFootprint(text: string): Map<number, number> {
+  const out = new Map<number, number>();
+  let pid: number | null = null;
+  for (const line of text.split('\n')) {
+    const h = /\[(\d+)\]:/.exec(line);
+    if (h && !/^\s/.test(line)) {
+      pid = Number(h[1]);
+      continue;
+    }
+    const v = /^\s*phys_footprint:\s*(\d+)\s*B\b/.exec(line);
+    if (v && pid !== null) out.set(pid, Number(v[1]));
+  }
+  return out;
+}
+
+/**
+ * macOS: `/usr/bin/footprint` ile pid → phys_footprint. Yalnızca DIJI_PERF açıkken (bench, geliştirme)
+ * çağrılır; tek çağrı ~0,1 sn. Araç yoksa ya da hata verirse null.
+ */
+export function macFootprint(pids: number[]): Promise<Map<number, number> | null> {
+  if (process.platform !== 'darwin' || !pids.length) return Promise.resolve(null);
+  const args = ['--noCategories', '-f', 'bytes', ...pids.map(String)];
+  return new Promise((resolve) => {
+    execFile('/usr/bin/footprint', args, { timeout: 5000, maxBuffer: 1024 * 1024 }, (err, stdout) => {
+      if (err && !stdout) return resolve(null);
+      const m = parseFootprint(String(stdout));
+      resolve(m.size ? m : null);
+    });
+  });
+}
+
+/** Footprint'in süreç tipine göre kırılımı (MB); herhangi bir pid eksikse null. */
+export function footprintParts(
+  metrics: ProcessMetricLike[],
+  fp: Map<number, number> | null,
+): { main: number; renderer: number; gpu: number; other: number } | null {
+  if (!fp || !metrics.length) return null;
+  const parts = { main: 0, renderer: 0, gpu: 0, other: 0 };
+  for (const m of metrics) {
+    const b = m.pid === undefined ? undefined : fp.get(m.pid);
+    if (b === undefined) return null;
+    const k = m.type === 'Browser' ? 'main' : m.type === 'Tab' ? 'renderer' : m.type === 'GPU' ? 'gpu' : 'other';
+    parts[k] += b;
+  }
+  const mb = (b: number) => round1(b / 1024 / 1024);
+  return { main: mb(parts.main), renderer: mb(parts.renderer), gpu: mb(parts.gpu), other: mb(parts.other) };
+}
+
+/** Bilinen pid'lerin footprint toplamı (MB); pid'lerden biri bile eksikse null (yarım toplam yanıltır). */
+export function footprintTotalMb(pids: number[], fp: Map<number, number> | null): number | null {
+  if (!fp || !pids.length) return null;
+  let bytes = 0;
+  for (const pid of pids) {
+    const b = fp.get(pid);
+    if (b === undefined) return null;
+    bytes += b;
+  }
+  return round1(bytes / 1024 / 1024);
+}
+
 function percentile(values: number[], p: number): number {
   if (!values.length) return 0;
   const s = [...values].sort((a, b) => a - b);
@@ -218,6 +296,34 @@ export function summarize(samples: PerfSample[], kind: 'avg' | 'p95'): PerfSampl
       ),
       total: pick((s) => s.rssMb.total),
     },
+    footprintMb: nullableStat(
+      samples.map((s) => s.footprintMb ?? null),
+      f,
+    ),
+    footprintParts: samples.some((s) => s.footprintParts)
+      ? {
+          main:
+            nullableStat(
+              samples.map((s) => s.footprintParts?.main ?? null),
+              f,
+            ) ?? 0,
+          renderer:
+            nullableStat(
+              samples.map((s) => s.footprintParts?.renderer ?? null),
+              f,
+            ) ?? 0,
+          gpu:
+            nullableStat(
+              samples.map((s) => s.footprintParts?.gpu ?? null),
+              f,
+            ) ?? 0,
+          other:
+            nullableStat(
+              samples.map((s) => s.footprintParts?.other ?? null),
+              f,
+            ) ?? 0,
+        }
+      : null,
     snapshotBytes: Math.round(f(samples.map((s) => s.snapshotBytes))),
     eventsPerSec: pick((s) => s.eventsPerSec),
     bytesReadPerSec: Math.round(f(samples.map((s) => s.bytesReadPerSec))),
@@ -290,10 +396,15 @@ export class PerfSampler {
     orphanMax: null,
   };
   private offs: (() => void)[] = [];
+  private fp: Map<number, number> | null = null;
+  private fpPending = false;
+  private fpTick = 0;
 
   constructor(opts: PerfSamplerOptions) {
     this.o = {
       bytesRead: () => 0,
+      footprint: null,
+      footprintEvery: 5,
       visibility: () => 'visible',
       now: () => Date.now(),
       mode: 'app',
@@ -394,9 +505,14 @@ export class PerfSampler {
     const at = this.o.now();
     const dtSec = Math.max(0.001, (at - this.lastAt) / 1000);
     const bytes = this.o.bytesRead();
+    const metrics = this.o.metrics();
+    const pids = metrics.map((m) => m.pid).filter((p): p is number => typeof p === 'number' && p > 0);
+    this.refreshFootprint(pids);
     const s: PerfSample = {
       at,
-      ...aggregateMetrics(this.o.metrics()),
+      ...aggregateMetrics(metrics),
+      footprintMb: footprintTotalMb(pids, this.fp),
+      footprintParts: footprintParts(metrics, this.fp),
       snapshotBytes: this.lastSnapshotBytes,
       eventsPerSec: round1(this.events / dtSec),
       bytesReadPerSec: Math.max(0, Math.round((bytes - this.lastBytes) / dtSec)),
@@ -409,6 +525,26 @@ export class PerfSampler {
     return s;
   }
 
+  /**
+   * Footprint'i arka planda yenile (örnekleme döngüsünü bekletmez). Örnek, eldeki son ölçümü kullanır;
+   * süreç kümesi değiştiyse (yeni pencere, GPU yeniden başladı) eksik pid nedeniyle bir sonraki ölçüme kadar null.
+   */
+  private refreshFootprint(pids: number[]): void {
+    const fn = this.o.footprint;
+    if (!fn || !pids.length) return;
+    // Sayaç bekleyen ölçümden bağımsız ilerler: yavaş bir çağrı aralığı kaydırmaz, yalnızca o turu atlar.
+    if (this.fpTick++ % Math.max(1, this.o.footprintEvery) !== 0 || this.fpPending) return;
+    this.fpPending = true;
+    fn(pids)
+      .then((m) => {
+        if (m && m.size) this.fp = m;
+      })
+      .catch(() => {})
+      .finally(() => {
+        this.fpPending = false;
+      });
+  }
+
   /** Son N saniyenin tek satırlık özeti (DIJI_PERF=1 konsol çıktısı). */
   line(lastN = 10): string {
     const ss = this.samples.slice(-lastN);
@@ -417,7 +553,7 @@ export class PerfSampler {
     const gpu = a.cpu.gpu === null ? '—' : `${a.cpu.gpu}%`;
     const rr = this.rendererSummary();
     const map = rr ? ` · harita ${rr.fpsAvg} fps (aktif ${rr.fpsActive ?? '—'}, boşta ${rr.fpsIdle ?? '—'})` : '';
-    return `[perf] cpu main ${a.cpu.main}% · renderer ${a.cpu.renderer}% · gpu ${gpu} · rss ${a.rssMb.total} MB · snapshot ${Math.round(a.snapshotBytes / 1024)} KB · ${a.eventsPerSec} olay/sn · ${Math.round(a.bytesReadPerSec / 1024)} KB/sn okuma · ${a.visibility}${map}`;
+    return `[perf] cpu main ${a.cpu.main}% · renderer ${a.cpu.renderer}% · gpu ${gpu} · rss ${a.rssMb.total} MB · bellek ${a.footprintMb ?? '—'} MB${a.footprintParts ? ` (main ${a.footprintParts.main} · renderer ${a.footprintParts.renderer} · gpu ${a.footprintParts.gpu} · diğer ${a.footprintParts.other})` : ''} · snapshot ${Math.round(a.snapshotBytes / 1024)} KB · ${a.eventsPerSec} olay/sn · ${Math.round(a.bytesReadPerSec / 1024)} KB/sn okuma · ${a.visibility}${map}`;
   }
 
   report(): PerfReport {
@@ -472,6 +608,8 @@ export interface PerfAppHooks {
   onWillQuit(cb: () => void): void;
   /** TranscriptPool okunan bayt (SessionEngine.internals.pool.stats().bytesRead). */
   bytesRead?: () => number;
+  /** pid → phys_footprint (bayt); yalnızca macOS. */
+  footprint?: (pids: number[]) => Promise<Map<number, number> | null>;
 }
 
 /**
@@ -492,6 +630,7 @@ export function startPerfFromEnv(
     metrics: () => hooks.getAppMetrics(),
     engine,
     bytesRead: hooks.bytesRead ?? (() => 0),
+    footprint: hooks.footprint ?? null,
     visibility: () => hooks.visibility(),
     mode: 'app',
   });

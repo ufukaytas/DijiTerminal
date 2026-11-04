@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import type { BoardEvent, BoardSnapshot } from '@shared/types';
 import {
   aggregateMetrics,
+  footprintTotalMb,
+  parseFootprint,
   PerfSampler,
   phasesOf,
   rssTrend,
@@ -116,6 +118,7 @@ describe('PerfSampler', () => {
   it('rssTrend 5 dk kovaları; phasesOf boş örnekte boş', () => {
     const at = (min: number, mb: number) => ({
       ...aggregateMetrics([m('Browser', 0, mb * 1024)]),
+      footprintMb: null,
       at: min * 60_000,
       snapshotBytes: 0,
       eventsPerSec: 0,
@@ -128,6 +131,71 @@ describe('PerfSampler', () => {
       [60, 150],
     ]);
     expect(phasesOf([], 1000)).toEqual([]);
+  });
+});
+
+describe('footprint (phys_footprint)', () => {
+  const OUT = [
+    '======================================================================',
+    'DijiTerminal [101]: 64-bit    Footprint: 100 MB (16384 bytes per page)',
+    '======================================================================',
+    '',
+    'Auxiliary data:',
+    '    phys_footprint: 104857600 B',
+    '    phys_footprint_peak: 209715200 B',
+    '',
+    'DijiTerminal Helper (Renderer) [202]: 64-bit    Footprint: 50 MB (16384 bytes per page)',
+    'Auxiliary data:',
+    '    phys_footprint: 52428800 B',
+  ].join('\n');
+
+  it('çıktıyı pid → bayt olarak çözer; peak satırını almaz', () => {
+    expect([...parseFootprint(OUT)]).toEqual([
+      [101, 104857600],
+      [202, 52428800],
+    ]);
+    expect(parseFootprint('footprint: error').size).toBe(0);
+  });
+
+  it('toplam MB; eksik pid ya da veri yoksa null', () => {
+    const fp = parseFootprint(OUT);
+    expect(footprintTotalMb([101, 202], fp)).toBe(150);
+    expect(footprintTotalMb([101, 303], fp)).toBeNull();
+    expect(footprintTotalMb([101], null)).toBeNull();
+    expect(footprintTotalMb([], fp)).toBeNull();
+  });
+
+  it('örnekleyici footprint’i arka planda yeniler ve fazlara taşır', async () => {
+    let now = 0;
+    const calls: number[][] = [];
+    const s = new PerfSampler({
+      metrics: () => [
+        { ...m('Browser', 1, 400 * 1024), pid: 101 },
+        { ...m('Tab', 1, 300 * 1024), pid: 202 },
+      ],
+      footprint: async (pids) => {
+        calls.push(pids);
+        return parseFootprint(OUT);
+      },
+      footprintEvery: 2,
+      now: () => now,
+    });
+    s.start(1000);
+    s.stop();
+    now = 1000;
+    expect(s.sample().footprintMb).toBeNull(); // ilk ölçüm henüz dönmedi
+    await new Promise((r) => setTimeout(r, 0));
+    now = 2000;
+    expect(s.sample().footprintMb).toBe(150);
+    now = 3000;
+    s.sample();
+    expect(calls).toEqual([
+      [101, 202],
+      [101, 202],
+    ]); // 3 örnekte 2 çağrı (her 2 örnekte bir)
+    const ph = s.report().phases[0];
+    expect(ph?.avg.rssMb.total).toBe(700);
+    expect(ph?.p95.footprintMb).toBe(150);
   });
 });
 

@@ -5,10 +5,11 @@ import { BUDGET, evaluate, formatTable, isReferenceMachine } from '../../scripts
 import { replay, sessionIdsOf, withVariant } from '../../scripts/lib/replay-core.mjs';
 import { readTree, REPO_ROOT, tmpDir } from './_tmp';
 
-const sample = (cpuMain: number, cpuRenderer: number, rss: number) => ({
+const sample = (cpuMain: number, cpuRenderer: number, rss: number, footprint: number | null = rss - 60) => ({
   at: 0,
   cpu: { main: cpuMain, renderer: cpuRenderer, gpu: null },
   rssMb: { main: rss, renderer: 0, gpu: null, total: rss },
+  footprintMb: footprint,
   snapshotBytes: 0,
   eventsPerSec: 0,
   bytesReadPerSec: 0,
@@ -47,6 +48,7 @@ describe('budget', () => {
       'mainCpuActive',
       'rendererCpuActive',
       'hiddenCpuTotal',
+      'footprintTotal',
       'rssTotal',
       'snapshotBytes',
       'fpsActive',
@@ -70,6 +72,24 @@ describe('budget', () => {
     expect(keys).toContain('engineRss');
     const soak = evaluate(report(), 'soak').find((r) => r.key === 'soakRssGrowth');
     expect(soak).toMatchObject({ value: 30, status: 'ok' });
+  });
+
+  it('bellek bütçesi footprint ile; RSS aşımı yalnızca bilgi ve exit kodunu etkilemez', () => {
+    const phases = [
+      { name: 'visible', durationMs: 1, samples: 1, avg: sample(1, 1, 400, 300), p95: sample(1, 1, 460, 320) },
+    ];
+    const rows = evaluate(report({ phases }), 'active');
+    const by = Object.fromEntries(rows.map((x) => [x.key, x]));
+    expect(by['footprintTotal']).toMatchObject({ value: 320, status: 'ok' });
+    expect(by['rssTotal']).toMatchObject({ value: 460, status: 'info' });
+    expect(rows.filter((x) => x.status === 'fail')).toEqual([]);
+    expect(formatTable(rows)).toContain('bilgi');
+    const over = evaluate(report({ phases: [{ ...phases[0], p95: sample(1, 1, 460, 380) }] }), 'active').find(
+      (x) => x.key === 'footprintTotal',
+    );
+    expect(over?.status).toBe('fail');
+    const old = evaluate(report({ phases: [{ ...phases[0], p95: sample(1, 1, 460, null) }] }), 'active');
+    expect(old.find((x) => x.key === 'footprintTotal')?.status).toBe('n/a');
   });
 
   it('büyük klasör: ilk snapshot eşiği', () => {
@@ -169,7 +189,15 @@ describe('formatTable yuvarlama', () => {
       machine: { cpuModel: 'x', cores: 1, memGb: 1, os: 'x' },
       firstSnapshotMs: 1,
       maxSnapshotBytes: 1,
-      phases: [{ name: 'visible', durationMs: 1, samples: 1, avg: { cpu: { main: 0.1, renderer: 0.2, gpu: 0 }, rssMb: { main: 1, renderer: 1, gpu: 1, total: 3 } }, p95: { cpu: { main: 0.1, renderer: 0.2, gpu: 0 }, rssMb: { main: 1, renderer: 1, gpu: 1, total: 3 } } }],
+      phases: [
+        {
+          name: 'visible',
+          durationMs: 1,
+          samples: 1,
+          avg: { cpu: { main: 0.1, renderer: 0.2, gpu: 0 }, rssMb: { main: 1, renderer: 1, gpu: 1, total: 3 } },
+          p95: { cpu: { main: 0.1, renderer: 0.2, gpu: 0 }, rssMb: { main: 1, renderer: 1, gpu: 1, total: 3 } },
+        },
+      ],
     };
     const out = ft(ev(r as never, 'idle'));
     expect(out).toContain('0.3 %');

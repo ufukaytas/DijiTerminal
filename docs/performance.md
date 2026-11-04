@@ -10,7 +10,7 @@ DijiTerminal gün boyu ikinci monitörde açık kalır; izlediği Claude Code se
 | 4 aktif session (replay ×5), main | < %5 | `npm run bench` |
 | 4 aktif session, renderer (3B dahil) | < %15 | `npm run bench` |
 | Pencere gizli, 4 aktif session, toplam | < %1 | `npm run bench:hidden` |
-| Toplam bellek (`phys_footprint`, tüm süreçler) | < 350 MB (gözden geçiriliyor, aşağıya bkz.) | `npm run bench` |
+| Toplam bellek (`phys_footprint`, tüm süreçler), p95 | < 700 MB | `npm run bench` |
 | Toplam RSS (main + renderer + GPU) | bilgi satırı | `npm run bench` |
 | İlk snapshot, 500 MB günlük transcript | < 1.5 sn | `npm run bench:big` |
 | Snapshot boyutu | < 200 KB | `npm run bench` |
@@ -62,8 +62,19 @@ Gizli fazdaki aşımın nedeni: motor `background` tempoda snapshot yayınını 
 | Snapshot (en büyük) | 77 KB | < 200 KB ✓ |
 | İlk snapshot, 500 MB sentetik (`bench:big`) | 822 ms | < 1.5 sn ✓ |
 | Toplam RSS p95 (bilgi) | 396 MB | — |
-| Toplam bellek (`phys_footprint`) p95, 180 sn | 589 MB | < 350 MB ✗ |
+| Toplam bellek (`phys_footprint`) p95, 180 sn / 10 dk | 589 / 677 MB | < 700 MB ✓ |
 
 Bellek kırılımı (footprint, 180 sn aktif): main 51 → 63 MB, renderer 82 → 184 MB (yükseliyor), **GPU 325–405 MB**, diğer 7 MB. GPU payı harita boştayken (4 fps, `bench:big`) de 335 MB; yani yükle değil WebGL çizim tamponlarıyla (Metal/IOSurface) ilgili sabit bir taban. Bu tamponlar RSS'te görünmez; bu yüzden eski RSS ölçümü belleği düşük gösteriyordu.
+
+Bütçenin 350 → 700 MB'a çekilmesi (karar 2026-11-05), 45 sn'lik deneylere dayanıyor (GPU footprint):
+
+| Varyant | GPU |
+|---------|-----|
+| Mevcut (Dengeli, antialias açık) | 380–395 MB |
+| Antialias kapalı | ~360 MB |
+| Piksel oranı 1 | ~413 MB (fark yok) |
+| 3B harita hiç yok (liste) | ~250 MB |
+
+GPU tabanının çoğu Chromium'un sayfa birleştirmesi; aynı Mac'te başka bir Electron uygulamasının GPU süreci 235 MB, Claude masaüstü 137 MB. 10 dk'lık koşuda renderer ~4. dakikada ~200 MB'ta, main ~65 MB'ta duruyor (sızıntı değil). Antialias'ı Dengeli'de kapatmak ~30 MB kazandırır ama kenarlar tırtıklanır ve kalite değişimi WebGL bağlamını yeniden kurmayı gerektirir; uygulanmadı.
 
 Ölçü değişikliği: `footprint` aracı (`/usr/bin/footprint`) yalnızca `DIJI_PERF=1` açıkken 5 sn'de bir çağrılır; `[perf]` satırı ve rapor `footprintMb` + `footprintParts` (main/renderer/GPU/diğer) içerir. Bütçe satırı footprint'le değerlendirilir; RSS bilgi satırıdır, exit kodunu etkilemez.

@@ -84,7 +84,7 @@ describe('budget', () => {
     expect(by['rssTotal']).toMatchObject({ value: 460, status: 'info' });
     expect(rows.filter((x) => x.status === 'fail')).toEqual([]);
     expect(formatTable(rows)).toContain('bilgi');
-    const over = evaluate(report({ phases: [{ ...phases[0], p95: sample(1, 1, 460, 380) }] }), 'active').find(
+    const over = evaluate(report({ phases: [{ ...phases[0], p95: sample(1, 1, 460, 720) }] }), 'active').find(
       (x) => x.key === 'footprintTotal',
     );
     expect(over?.status).toBe('fail');

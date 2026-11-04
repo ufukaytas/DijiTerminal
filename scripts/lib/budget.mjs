@@ -65,10 +65,12 @@ export const BUDGET = [
   },
   {
     // Bellek bütçesi phys_footprint ile (Etkinlik Monitörü'nün "Bellek" sütunu). RSS, Electron Framework'ün
-    // paylaşılan sayfalarını her süreçte ayrı saydığı için gerçek maliyeti abartır (karar 2026-10-28).
+    // paylaşılan sayfalarını her süreçte ayrı sayar ama GPU sürecinin Metal/IOSurface tamponlarını hiç görmez.
+    // 700 MB (karar 2026-11-05): 3B harita olmadan da GPU ~250 MB (Chromium birleştirme), harita +120–150 MB,
+    // renderer ~4. dk'da ~200 MB'ta durur; M3 Pro'da 10 dk ×5 replay p95 677 MB.
     key: 'footprintTotal',
     label: 'Toplam bellek (phys_footprint, tüm süreçler), p95',
-    limit: 350,
+    limit: 700,
     unit: 'MB',
     cmp: '<',
     scenarios: ['active', 'idle', 'soak'],

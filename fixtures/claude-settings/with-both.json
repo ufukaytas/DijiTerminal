@@ -1,0 +1,9 @@
+{
+  "hooks": {
+    "Notification": [
+      { "hooks": [ { "type": "command", "command": "terminal-notifier -message 'Claude'" } ] }
+    ]
+  },
+  "statusLine": { "type": "command", "command": "npx ccusage statusline" },
+  "env": { "FOO": "bar" }
+}

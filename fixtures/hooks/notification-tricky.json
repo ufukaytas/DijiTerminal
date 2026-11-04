@@ -1,0 +1,1 @@
+{"session_id":"../../etc/x","cwd":"/Users/demo/Projects/\"quoted\" dir","hook_event_name":"Notification","message":"Claude needs your permission to use Bash: echo \"$(rm -rf ~)\"\n\tnext line","notification_type":"permission_prompt"}

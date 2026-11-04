@@ -1,0 +1,84 @@
+/* Workers paneli (03/03) — prototipteki sol alt liste. */
+.workers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.workers > li + li {
+  border-top: 1px solid var(--line);
+}
+.worker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 0;
+  border-left: 3px solid var(--line2);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.worker:hover {
+  background: var(--panel2);
+}
+.worker.sel {
+  background: #131a26;
+}
+.worker.done {
+  opacity: 0.55;
+}
+.worker:focus-visible {
+  outline-offset: -2px;
+}
+.w-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.w-top b {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.w-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.w-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+}
+.w-meta > span {
+  white-space: nowrap;
+}
+.w-where {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.w-bg {
+  background: #1a2030;
+  color: var(--muted);
+}
+.w-loop {
+  background: var(--wait-bg);
+  color: var(--wait);
+}
+.worker-skel {
+  padding: 10px 12px;
+}

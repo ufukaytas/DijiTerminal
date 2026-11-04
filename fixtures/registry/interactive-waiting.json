@@ -1,0 +1,13 @@
+{
+  "pid": 41002,
+  "sessionId": "22222222-2222-4222-8222-222222222222",
+  "cwd": "/Users/demo/Projects/demo-api",
+  "startedAt": 1793160000000,
+  "updatedAt": 1793160300000,
+  "statusUpdatedAt": 1793160290000,
+  "status": "waiting",
+  "kind": "interactive",
+  "entrypoint": "cli",
+  "name": null,
+  "waitingFor": "Bash"
+}

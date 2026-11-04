@@ -1,0 +1,4 @@
+{
+  "statusLine": { "type": "command", "command": "~/.claude/statusline-command.sh 'with quotes'", "padding": 1 },
+  "includeCoAuthoredBy": false
+}

@@ -1,0 +1,6 @@
+[
+  { "id": "9f8e7d6c", "sessionId": "99999999-9999-4999-8999-999999999999", "kind": "background", "pid": null, "cwd": "/tmp/ornek", "name": null, "state": "failed", "status": null, "startedAt": 1793160000000 },
+  { "id": "11111111-1111-4111-8111-111111111111", "sessionId": "11111111-1111-4111-8111-111111111111", "kind": "interactive", "pid": 41001, "cwd": "/Users/demo/Projects/demo-app", "name": "demo", "state": null, "status": "idle", "startedAt": 1793160000000 },
+  { "id": "0a1b2c3d", "sessionId": "88888888-8888-4888-8888-888888888888", "kind": "background", "pid": 41008, "cwd": "/Users/demo/Projects/demo-app", "name": null, "state": "done", "status": "idle", "startedAt": 1793160000000 },
+  { "id": "1a2b3c4d", "sessionId": "77777777-7777-4777-8777-777777777777", "kind": "background", "pid": 41009, "cwd": "/Users/demo/Projects/demo-api", "name": "gece işi", "state": "running", "status": "busy", "startedAt": 1793160000000 }
+]

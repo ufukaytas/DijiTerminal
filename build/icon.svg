@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- DijiTerminal uygulama ikonu (05/03): koyu zemin, izometrik proje platformu, ince anten direği ve ışıklı uç
+       (3B haritadaki session sembolü). Kaynak budur; PNG/ICNS `npm run icon` ile üretilir. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A2030"/>
+      <stop offset="1" stop-color="#0B0E13"/>
+    </linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#232B3B"/>
+      <stop offset="1" stop-color="#161B26"/>
+    </linearGradient>
+    <linearGradient id="mast" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#5EB3FF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#F2B134"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#F2B134" stop-opacity="0.85"/>
+      <stop offset="0.35" stop-color="#F2B134" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#F2B134" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5EB3FF" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#5EB3FF" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="sq"><rect x="100" y="100" width="824" height="824" rx="185"/></clipPath>
+  </defs>
+
+  <!-- macOS ikon ızgarası: 824 px yuvarlatılmış kare, 1024 tuval -->
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  <g clip-path="url(#sq)" opacity="0.18" stroke="#5A6478" stroke-width="2">
+    <path d="M100 700 L512 494 L924 700 M100 620 L512 414 L924 620 M100 780 L512 574 L924 780"/>
+  </g>
+
+  <!-- Platform: izometrik kutu -->
+  <path d="M512 520 L780 654 L512 788 L244 654 Z" fill="url(#top)" stroke="#7DD3C0" stroke-opacity="0.55" stroke-width="5"/>
+  <path d="M244 654 L244 690 L512 824 L512 788 Z" fill="#10141C"/>
+  <path d="M780 654 L780 690 L512 824 L512 788 Z" fill="#0D1118"/>
+  <path d="M244 690 L512 824 L780 690" fill="none" stroke="#7DD3C0" stroke-opacity="0.25" stroke-width="3"/>
+
+  <!-- Anten tabanı -->
+  <ellipse cx="512" cy="654" rx="78" ry="39" fill="url(#pad)"/>
+  <ellipse cx="512" cy="654" rx="40" ry="20" fill="none" stroke="#5EB3FF" stroke-opacity="0.8" stroke-width="5"/>
+
+  <!-- İnce anten direği -->
+  <rect x="505" y="300" width="14" height="356" rx="7" fill="url(#mast)"/>
+
+  <!-- Işıklı uç -->
+  <circle cx="512" cy="292" r="150" fill="url(#glow)"/>
+  <circle cx="512" cy="292" r="34" fill="#F2B134"/>
+  <circle cx="502" cy="282" r="11" fill="#FFF3D6" opacity="0.9"/>
+</svg>

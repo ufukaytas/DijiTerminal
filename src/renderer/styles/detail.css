@@ -1,0 +1,273 @@
+/* Seçili session paneli (03/02). */
+
+.detail-b {
+  padding: 12px;
+}
+.d-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.d-body.gone > :not(.d-gone):not(.d-actions) {
+  opacity: 0.55;
+}
+.d-gone {
+  margin: 0;
+  font-size: 11px;
+  color: var(--dim);
+  border: 1px dashed var(--line2);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.d-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.d-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.pill.busy {
+  background: #0f2a3f;
+  color: var(--busy);
+}
+.pill.waiting {
+  background: #3a2a0c;
+  color: var(--wait);
+}
+.pill.idle {
+  background: #10261b;
+  color: var(--idle);
+}
+.pill.ended {
+  background: #1a2030;
+  color: var(--dim);
+}
+.d-proj {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.d-prompt {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.d-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 12px;
+}
+.d-meta dt {
+  color: var(--dim);
+}
+.d-meta dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ctx {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ctx-l {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.ctx-b {
+  height: 5px;
+  background: #232a36;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.ctx-b div {
+  height: 100%;
+  background: var(--busy);
+}
+.ctx.warn .ctx-b div {
+  background: var(--slow);
+}
+.ctx.warn .ctx-l span:last-child {
+  color: var(--slow);
+}
+.d-wait {
+  background: var(--wait-bg);
+  border: 1px dashed var(--wait);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--wait);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.d-wait code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.flag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--slow-bg);
+  color: var(--slow);
+}
+.flag.f-loop-suspect {
+  background: #3a2a0c;
+  color: var(--wait);
+}
+.d-agents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.d-agents li {
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 7px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--panel2);
+  min-width: 0;
+}
+.d-agents li.done {
+  opacity: 0.55;
+}
+/* Haritada robotuna tıklanan ajan (03/08). */
+.d-agents li.focus {
+  border-color: var(--fg);
+  box-shadow: 0 0 0 1px var(--fg);
+  opacity: 1;
+}
+.d-agents li.fold {
+  border-style: dashed;
+  background: transparent;
+  align-items: flex-start;
+}
+.a-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.a-top b {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+.a-top small {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.tchip {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.a-now {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+.a-now > span {
+  white-space: nowrap;
+}
+.a-now .a-label,
+.a-now > span[title] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.kchip {
+  font-size: 10px;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: #1a2030;
+  white-space: nowrap;
+}
+.d-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.jump {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+.jump kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  opacity: 0.8;
+}

@@ -1,0 +1,13 @@
+{
+  "pid": 41081,
+  "sessionId": "f3aaf948-414e-47b6-a819-654dca3f01c8",
+  "cwd": "/Users/demo/Projects/demo-ui",
+  "name": "ui",
+  "kind": "interactive",
+  "entrypoint": "cli",
+  "status": "idle",
+  "waitingFor": null,
+  "startedAt": 1767256800000,
+  "updatedAt": 1767256813200,
+  "statusUpdatedAt": 1767256813200
+}

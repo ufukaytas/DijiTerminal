@@ -1,0 +1,5 @@
+    1     0 ??         0.0  12000 /sbin/launchd
+  500     1 ??         0.8 150000 /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+  801   500 ttys010    0.0   2000 login
+  802   801 ttys010    0.0   3000 -zsh
+  803   802 ttys010    3.0 400000 claude

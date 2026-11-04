@@ -1,0 +1,13 @@
+{
+  "pid": 41008,
+  "sessionId": "88888888-8888-4888-8888-888888888888",
+  "cwd": "/Users/demo/Projects/demo-app",
+  "startedAt": 1793160000000,
+  "updatedAt": 1793160300000,
+  "statusUpdatedAt": 1793160290000,
+  "status": "idle",
+  "kind": "bg",
+  "jobId": "0a1b2c3d",
+  "entrypoint": "cli",
+  "name": null
+}

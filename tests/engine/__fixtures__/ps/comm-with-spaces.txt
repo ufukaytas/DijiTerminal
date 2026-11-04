@@ -1,0 +1,5 @@
+    1     0 ??         0.0  12000 /sbin/launchd
+  400     1 ??         0.5 100000 /Applications/Some Terminal.app/Contents/MacOS/Some Terminal
+  410   400 ttys020    0.0   3000 -zsh
+  411   410 ttys020    0.1 300000 claude
+garbage line

@@ -1,0 +1,7 @@
+not json at all
+{"v":2,"ts":1793160000001,"event":"Stop","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":null,"claudePid":1}
+{"v":1,"ts":"yesterday","event":"Stop","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":null,"claudePid":1}
+{"v":1,"ts":1793160000002,"event":"Stop","sessionId":"etcx","cwd":"/Users/demo/Projects/demo-app","tty":null,"claudePid":1}
+{"v":1,"ts":1793160000003,"event":"Unknown","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":null,"claudePid":1}
+[1,2,3]
+{"v":1,"ts":1793160000004,"event":"Stop","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":"/dev/ttys004; rm -rf ~","claudePid":"x"}

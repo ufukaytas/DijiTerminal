@@ -1,0 +1,12 @@
+{
+  "pid": 41005,
+  "sessionId": "55555555-5555-4555-8555-555555555555",
+  "cwd": "/Users/demo/Projects/demo-app",
+  "startedAt": 1793160000000,
+  "updatedAt": 1793160300000,
+  "statusUpdatedAt": 1793160290000,
+  "status": "busy",
+  "kind": "background",
+  "entrypoint": "cli",
+  "name": null
+}

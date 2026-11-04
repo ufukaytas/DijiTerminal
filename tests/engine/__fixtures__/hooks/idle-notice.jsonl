@@ -1,0 +1,2 @@
+{"v":1,"ts":1793160000000,"event":"Stop","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":"/dev/ttys004","claudePid":41001}
+{"v":1,"ts":1793160060000,"event":"Notification","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":"/dev/ttys004","claudePid":41001,"message":"Claude is waiting for your input","notificationType":"idle_prompt"}

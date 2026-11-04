@@ -1,0 +1,16 @@
+{
+  "name": "compact",
+  "description": "compact_boundary sonrası aynı süreçte yeni sessionId.",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "expect": {
+    "sessions": 1,
+    "statuses": {
+      "b486c42b-3c8f-42fb-99d1-1c561d1e6780": "idle"
+    },
+    "superseded": {
+      "293a6f2d-b08c-4d86-b6d4-1a25f3993054": "b486c42b-3c8f-42fb-99d1-1c561d1e6780"
+    }
+  }
+}

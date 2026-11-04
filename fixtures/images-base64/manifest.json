@@ -1,0 +1,14 @@
+{
+  "name": "images-base64",
+  "description": "512 KB base64 görüntü içeren tool_result satırı (parse öncesi kırpılmalı).",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "expect": {
+    "sessions": 1,
+    "statuses": {
+      "f3aaf948-414e-47b6-a819-654dca3f01c8": "idle"
+    },
+    "maxParseMs": 50
+  }
+}

@@ -1,0 +1,397 @@
+/* 3B harita (03/05, 03/07): canvas, CSS2D etiketleri, üst katmanlar ve görünüm anahtarı. */
+
+.mapview {
+  position: absolute;
+  inset: 0;
+}
+
+.map3d {
+  position: absolute;
+  inset: 0;
+  outline: none;
+}
+.map3d:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--busy);
+}
+.map-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.map-labels {
+  z-index: 1;
+}
+.map3d .hint,
+.map3d .legend,
+.map-tip,
+.map-over,
+.map-mode,
+.map-debug {
+  z-index: 2;
+}
+.map3d .hint {
+  transition: opacity 0.6s;
+}
+.map3d .hint.dim {
+  opacity: 0.5;
+}
+.map-over {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(11, 14, 19, 0.55);
+}
+.map-over .center-state {
+  position: static;
+}
+.map-debug {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  background: rgba(11, 14, 19, 0.85);
+  padding: 4px 8px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* liste ↔ 3B anahtarı */
+.map-mode {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  gap: 2px;
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: 7px;
+  padding: 2px;
+}
+.map-mode button {
+  border: 0;
+  background: transparent;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.map-mode button[aria-pressed='true'] {
+  background: var(--line2);
+  color: var(--fg);
+}
+.map-mode button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- CSS2D etiketleri ---- */
+.slabel {
+  pointer-events: auto;
+  cursor: pointer;
+  background: rgba(15, 19, 26, 0.9);
+  border: 1px solid var(--line2);
+  border-radius: 7px;
+  padding: 4px 9px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  white-space: nowrap;
+  color: var(--fg);
+  font-family: var(--font-ui);
+}
+.slabel b {
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+}
+.slabel .sl-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.slabel b i {
+  width: 7px;
+  height: 7px;
+  border-radius: 4px;
+  display: inline-block;
+  flex: none;
+}
+.slabel small {
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.slabel .tone-muted {
+  color: var(--muted);
+}
+.slabel .tone-wait {
+  color: var(--wait);
+}
+.slabel .tone-slow,
+.slabel .tone-warn {
+  color: var(--slow);
+}
+.slabel.sel {
+  box-shadow: 0 0 0 2px var(--fg);
+}
+.slabel.ended {
+  opacity: 0.55;
+}
+.slabel:hover {
+  border-color: #3a4458;
+}
+.alabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg);
+  background: rgba(11, 14, 19, 0.85);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alabel em {
+  font-style: normal;
+  color: var(--dim);
+}
+.flabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg);
+  background: rgba(11, 14, 19, 0.85);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.flabel.on {
+  opacity: 1;
+}
+.flabel.conflict {
+  opacity: 1;
+  color: #ffd2cc;
+  background: rgba(42, 20, 20, 0.92);
+  border: 1px solid #5a1f1f;
+}
+.map-labels .mini {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.map-labels .mini.more {
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(15, 19, 26, 0.9);
+  border: 1px solid var(--line2);
+  border-radius: 999px;
+  padding: 2px 8px;
+  text-transform: none;
+}
+
+/* ---- Robot ekipleri (03/08) ---- */
+.swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.bot-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.bot-tag .tchip {
+  font-size: 9px;
+  padding: 0 4px;
+  border-radius: 3px;
+}
+.bubble {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+  color: var(--fg);
+  background: rgba(15, 19, 26, 0.92);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 2px 7px;
+  margin-bottom: 4px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+.bubble.ask {
+  color: var(--wait);
+  background: var(--wait-bg);
+  border-color: #5a4614;
+  font-weight: 600;
+}
+.bubble.slow {
+  color: var(--slow);
+  background: var(--slow-bg);
+  border-color: #5a1f1f;
+}
+.bubble.work {
+  color: var(--muted);
+}
+.bubble.sleep {
+  color: var(--dim);
+  background: transparent;
+  border-color: transparent;
+  font-style: italic;
+}
+.map-tip {
+  position: absolute;
+  min-width: 220px;
+  max-width: 320px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: rgba(15, 19, 26, 0.96);
+  border: 1px solid var(--line2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.map-tip[hidden] {
+  display: none;
+}
+.map-tip .tip-h {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.map-tip .tip-n {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.map-tip .tip-st {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.map-tip .st-ask {
+  color: var(--wait);
+}
+.map-tip .st-slow {
+  color: var(--slow);
+}
+.map-tip .st-work {
+  color: var(--busy);
+}
+.map-tip .st-sleep {
+  color: var(--idle);
+}
+.map-tip .st-off {
+  color: var(--ended);
+}
+.map-tip .tip-w,
+.map-tip .tip-s {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.map-tip .tip-now {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.map-tip .tip-k {
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+/* ---- Web küresi (03/08) ---- */
+.webtitle {
+  pointer-events: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  background: rgba(11, 14, 19, 0.82);
+  border: 1px solid #1e3a30;
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  margin-top: 6px;
+}
+.webtitle b {
+  color: var(--web);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.webtitle:hover {
+  border-color: var(--web);
+}
+.webtitle:focus-visible {
+  outline: 2px solid var(--web);
+  outline-offset: 1px;
+}
+.sattag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: #cff5e3;
+  background: rgba(10, 24, 19, 0.9);
+  border: 1px solid #1e3a30;
+  border-radius: 5px;
+  padding: 1px 6px;
+  margin-left: 8px;
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transition: opacity 0.6s;
+}
+.sattag i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  flex: none;
+}
+.sattag.old {
+  opacity: 0.45;
+  color: #7f9a8e;
+  border-color: #17281f;
+}
+
+[data-motion='reduced'] .sattag,
+[data-motion='reduced'] .flabel,
+[data-motion='reduced'] .map3d .hint {
+  transition: none;
+}

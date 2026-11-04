@@ -1,0 +1,433 @@
+/* Kabuk, üst bar, paneller, toast (00/03, 03/01). Ölçüler Session Board 3D prototipinden. */
+
+.app {
+  height: 100%;
+  display: grid;
+  /* üst bar · sahne · gömülü terminal paneli (07/01; sekme yoksa satır boş) */
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+/* ---- üst bar ---- */
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  min-height: 34px;
+  padding-left: 72px; /* macOS trafik ışıkları (hiddenInset) */
+  -webkit-app-region: drag;
+  user-select: none;
+}
+.bar button,
+.bar select,
+.bar .chips {
+  -webkit-app-region: no-drag;
+}
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.brand span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.chip {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #1a2030;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.chip.c-busy {
+  background: #0f2a3f;
+  color: var(--busy);
+}
+.chip.c-wait {
+  background: #3a2a0c;
+  color: var(--wait);
+  font-weight: 600;
+}
+.chip.c-slow {
+  background: var(--slow-bg);
+  color: var(--slow);
+}
+.spacer {
+  flex: 1;
+}
+/* ---- kullanım limitleri (02/08): iki satır, dar; sıfırlanma saati tooltip'te ---- */
+.limits {
+  display: grid;
+  grid-template-columns: auto 30px auto;
+  gap: 1px 5px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.25;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.limits.stale {
+  opacity: 0.45;
+}
+.limit {
+  display: contents;
+}
+.limit-label {
+  color: var(--dim);
+}
+.limit-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: #1a2030;
+  overflow: hidden;
+}
+.limit-bar i {
+  display: block;
+  height: 100%;
+  background: var(--busy);
+}
+.limit.l-warn .limit-bar i {
+  background: var(--wait);
+}
+.limit.l-warn .limit-pct {
+  color: var(--wait);
+}
+.limit.l-crit .limit-bar i {
+  background: var(--slow);
+}
+.limit.l-crit .limit-pct {
+  color: var(--slow);
+  font-weight: 600;
+}
+/* Limitler göründüğünde yer açmak için dar ekranda araç/dk çipi gizlenir (03/01 sayaçlarının en az kritik olanı). */
+@media (max-width: 1760px) {
+  .bar:has(.limits) .chip.c-rate {
+    display: none;
+  }
+}
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 2px;
+}
+.seg button,
+.seg-more {
+  border: 0;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 160px;
+}
+.seg-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seg button[aria-pressed='true'],
+.seg-more.on {
+  background: var(--line2);
+  color: var(--fg);
+  font-weight: 500;
+}
+.seg button:hover {
+  color: var(--fg);
+}
+.seg-more {
+  font-family: var(--font-mono);
+  appearance: none;
+}
+.btn {
+  border: 1px solid var(--line2);
+  background: var(--panel2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  min-height: 34px;
+}
+.btn:hover:not(:disabled) {
+  border-color: #3a4458;
+}
+.btn:disabled {
+  cursor: default;
+  color: var(--dim);
+  opacity: 0.7;
+}
+.btn.wait {
+  border-color: var(--wait);
+  background: var(--wait);
+  color: #1b1709;
+  font-weight: 600;
+}
+.btn.ghost {
+  background: transparent;
+}
+.clock {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.dot.sm {
+  width: 7px;
+  height: 7px;
+}
+.linkish {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--busy);
+  cursor: pointer;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---- sahne ---- */
+.stage {
+  display: grid;
+  grid-template-columns: clamp(250px, 16vw, 310px) minmax(0, 1fr) clamp(270px, 18vw, 350px);
+  gap: 8px;
+  min-height: 0;
+}
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  min-width: 0;
+}
+.side > .panel {
+  flex: 1 1 0;
+}
+.scene {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* ---- panel ---- */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.panel-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel2);
+}
+.panel-h h2 {
+  /* Başlıklar kaynakta büyük harfle yazılır: lang="tr" altında CSS uppercase "session"ı "SESSİON" yapar. */
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.panel-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.panel-b {
+  overflow: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  flex: 1;
+}
+.empty {
+  padding: 16px 12px;
+  margin: 0;
+  color: var(--dim);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.sec-t {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--dim);
+}
+.note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.45;
+}
+
+/* iskelet satırlar */
+.skel {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.skel i {
+  display: block;
+  height: 10px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #171c26, #1f2632, #171c26);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---- toast ---- */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 20;
+  max-width: min(520px, calc(100% - 32px));
+}
+.toast {
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 8px 8px 8px 14px;
+  font-size: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toast.t-error {
+  border-color: #5a1f1f;
+}
+.toast.t-warn {
+  border-color: #4a3a14;
+}
+.toast-act {
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 3px 8px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.toast-act + .toast-x {
+  margin-left: 0;
+}
+.toast-x {
+  border: 0;
+  background: none;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  margin-left: auto;
+}
+
+/* ---- dar ekran: tek sütun, harita üstte ---- */
+@media (max-width: 1000px) {
+  body {
+    overflow: auto;
+  }
+  .app {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .stage {
+    display: flex;
+    flex-direction: column;
+  }
+  .scene {
+    order: -1;
+    height: 62vh;
+    min-height: 340px;
+  }
+  .side > .panel {
+    flex: none;
+  }
+  .panel-b {
+    max-height: 360px;
+  }
+}
+
+/* hareketi azalt: sistem tercihi ya da (00/04 sonrası) ayar */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+[data-motion='reduced'] *,
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after {
+  animation: none !important;
+  transition: none !important;
+}

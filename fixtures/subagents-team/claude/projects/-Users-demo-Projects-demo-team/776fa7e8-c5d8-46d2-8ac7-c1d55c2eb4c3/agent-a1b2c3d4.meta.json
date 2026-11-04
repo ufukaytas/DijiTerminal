@@ -1,0 +1,6 @@
+{
+  "description": "trend araştırması",
+  "agentType": "audience-seo-researcher",
+  "model": "claude-haiku-5-5",
+  "requestShape": "foreground"
+}

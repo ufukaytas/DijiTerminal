@@ -1,0 +1,15 @@
+    1     0 ??         0.0  12000 /sbin/launchd
+  612     1 ??         1.2 180000 /Applications/iTerm.app/Contents/MacOS/iTerm2
+  640     1 ??         0.0   4000 /Applications/iTerm.app/Contents/MacOS/iTermServer-3.5.10
+  701   640 ttys004    0.0   2000 /usr/bin/login
+  702   701 ttys004    0.0   3000 -zsh
+  703   702 ttys004   12.5 420000 claude
+  711   640 ttys005    0.0   2000 /usr/bin/login
+  712   711 ttys005    0.0   3000 -zsh
+  713   712 ttys005    0.3 380000 /Users/user/.local/share/claude/versions/2.1.5
+  721   640 ttys006    0.0   2000 /usr/bin/login
+  722   721 ttys006    0.0   3000 -zsh
+  723   722 ttys006    1,5 300000 node
+  731   640 ttys007    0.0   2000 /usr/bin/login
+  732   731 ttys007    0.0   3000 -zsh
+  733   732 ttys007    0.0 250000 claude

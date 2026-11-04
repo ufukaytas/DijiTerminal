@@ -1,0 +1,13 @@
+{
+  "pid": 41052,
+  "sessionId": "d21e7220-2944-45a8-ae6d-22f1d8dc6c3c",
+  "cwd": "/Users/demo/Projects/demo-1/.claude/worktrees/ui",
+  "name": "ui",
+  "kind": "interactive",
+  "entrypoint": "cli",
+  "status": "idle",
+  "waitingFor": null,
+  "startedAt": 1767256805000,
+  "updatedAt": 1767257045700,
+  "statusUpdatedAt": 1767257045700
+}

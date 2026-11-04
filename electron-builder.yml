@@ -1,0 +1,75 @@
+# Paketleme (05/03). Komutlar: npm run dist | dist:universal | dist:dir | dist:signed
+appId: com.dijitalai.dijiterminal
+productName: DijiTerminal
+copyright: Copyright © 2026 Ufuk Aytaş
+directories:
+  output: release
+  buildResources: build
+# Pakete yalnızca derlenmiş kod girer: fixture, script, brief, test ve kaynak haritaları girmez.
+files:
+  - out/**
+  - "!out/**/*.map"
+  - package.json
+# 07/01: node-pty native modülü (pty.node + spawn-helper) asar içinden çalıştırılamaz; asar dışına açılır.
+# node-pty yolu kendisi app.asar → app.asar.unpacked olarak düzeltir. spawn-helper'ın çalıştırma izni
+# scripts/fix-node-pty.mjs (postinstall) ile verilir; `npm run dist:check -- --app …` paket içinde denetler.
+asarUnpack:
+  - node_modules/node-pty/**
+# node-pty 1.1.0 N-API prebuild'leriyle gelir (darwin-arm64/x64); Electron için yeniden derleme gerekmez.
+# Varsayılan npmRebuild native modülleri node-gyp ile derlemeye çalışır (Xcode CLT ister, gereksiz).
+npmRebuild: false
+# Faz 1 hook script'leri uygulamayla gider; paketli uygulamada process.resourcesPath/hooks altında (asar dışında).
+# 01/02 kurulum aracı script'leri buradan ~/Library/Application Support/DijiTerminal/hooks'a kopyalar.
+extraResources:
+  - from: hooks
+    to: hooks
+    filter:
+      - "**/*"
+  # 06/01: menü çubuğu ikonları (macOS template image). Paketli uygulamada process.resourcesPath/tray.
+  - from: resources/tray
+    to: tray
+    filter:
+      - "*.png"
+mac:
+  category: public.app-category.developer-tools
+  artifactName: "DijiTerminal-${version}-${arch}-mac.${ext}" # zip; dmg kendi adını kullanır
+  icon: build/icon.icns
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64]
+  # İmza kararı (05/03, electron-builder 26.18 doğrulandı):
+  #  - Varsayılan ad-hoc imza (identity "-"). Kaynaktan derleyenler için; ad-hoc imza bundle'a kararlı bir kimlik
+  #    verir, TCC (Otomasyon izni) imzasız bundle'a göre daha tutarlı davranır.
+  #  - electron-builder belgesine göre ad-hoc + hardened runtime, `disable-library-validation` entitlement'ı
+  #    olmadan açılışta çöker; bu entitlement bilinçli olarak eklenmiyor → ad-hoc'ta hardened runtime kapalı.
+  #  - Yayın sürümleri `npm run dist:signed` ile alınır (CSC_NAME = Developer ID Application + hardened runtime +
+  #    entitlements). APPLE_KEYCHAIN_PROFILE (xcrun notarytool store-credentials) tanımlıysa electron-builder
+  #    notarize edip staple eder; README › "İmzalı ve notarize sürüm alma".
+  identity: "-"
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    # 04/01: macOS Otomasyon (Apple Events) izin isteminde görünen açıklama. Bu satır yoksa istem hiç çıkmaz.
+    NSAppleEventsUsageDescription: "DijiTerminal, seçtiğiniz Claude Code session'ının iTerm2 sekmesini öne getirmek için iTerm2'yi kontrol eder."
+    LSUIElement: false
+    LSMinimumSystemVersion: "13.0"
+dmg:
+  title: "DijiTerminal ${version}"
+  artifactName: "DijiTerminal-${version}-${arch}.${ext}"
+  backgroundColor: "#0B0E13"
+  iconSize: 96
+  window:
+    width: 540
+    height: 380
+  contents:
+    - x: 140
+      y: 190
+      type: file
+    - x: 400
+      y: 190
+      type: link
+      path: /Applications

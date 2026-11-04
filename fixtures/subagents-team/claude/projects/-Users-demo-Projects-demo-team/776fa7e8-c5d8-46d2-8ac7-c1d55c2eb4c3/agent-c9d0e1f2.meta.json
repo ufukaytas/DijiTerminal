@@ -1,0 +1,6 @@
+{
+  "description": "skool planı",
+  "agentType": "ventures-skool-planner",
+  "model": "claude-sonnet-5-5",
+  "requestShape": "background"
+}

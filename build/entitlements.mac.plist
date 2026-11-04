@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  05/03: yalnızca gerekli entitlement'lar. Hardened runtime yalnızca Developer ID ile imzalı build'de açılır
+  (npm run dist:signed); ad-hoc build'de bu dosya etkisizdir ama aynı bundle kimliği için tutulur.
+  App Sandbox bilinçli olarak KAPALI: uygulama ~/.claude okur ve osascript çalıştırır.
+  disable-library-validation EKLENMEZ.
+-->
+<plist version="1.0">
+<dict>
+  <!-- Electron/V8 JIT -->
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <!-- 04/01: osascript ile iTerm2/Terminal'i kontrol (Otomasyon izni) -->
+  <key>com.apple.security.automation.apple-events</key>
+  <true/>
+</dict>
+</plist>

@@ -1,0 +1,13 @@
+node_modules/
+out/
+dist/
+release/
+coverage/
+.DS_Store
+*.log
+.fixture-salt
+fixtures/big-transcript/
+fixtures/transcripts/big/
+*.tsbuildinfo
+bench-results/
+feature-briefs/

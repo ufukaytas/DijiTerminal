@@ -1,0 +1,15 @@
+{
+  "name": "conflict-same-file",
+  "description": "Aynı repoda iki session (biri worktree) aynı dosyaya yazar.",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "expect": {
+    "sessions": 2,
+    "conflicts": 1,
+    "conflictPaths": [
+      "/Users/demo/Projects/demo-1/lib/types.ts"
+    ],
+    "projects": 1
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "subagents-team",
+  "description": "Agent takımı: 3 subagent, biri bitmiş, biri arka planda.",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "repoRoots": {
+    "/Users/demo/Projects/demo-team": "repos/demo-team"
+  },
+  "teams": {
+    "a1b2c3d4": "audience",
+    "e5f6a7b8": "pipeline",
+    "c9d0e1f2": "ventures"
+  },
+  "expect": {
+    "sessions": 1,
+    "statuses": {
+      "776fa7e8-c5d8-46d2-8ac7-c1d55c2eb4c3": "busy"
+    },
+    "subagents": 3,
+    "totals": {
+      "runningAgents": 2
+    }
+  }
+}

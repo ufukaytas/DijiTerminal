@@ -1,0 +1,3 @@
+# fixtures/transcripts/edge
+
+Normalizer'ın kenar durumları (02/03): `<command-name>/compact</command-name>`, `isMeta` (string ve dizi), `compact_boundary`, metin + görsel bloklu prompt, aynı `message.id` ile iki satır (usage tekrarı) ve `effort` alanı, hatalı tool_result (`is_error`), `[Request interrupted`, `<task-notification>`, düz metin `content` (eski format), `<synthetic>` model, `isApiErrorMessage`, `system/api_error`, MCP aracı, TodoWrite, `input`'u olmayan Bash, `toolUseResult.interrupted`, boş prompt, bilinmeyen kayıt tipleri (`summary`, `some-future-type`), ana dosyada `isSidechain` + `agentId` taşıyan subagent kaydı (eski format), `timestamp`'i olmayan kayıt. `gitBranch: HEAD` yok sayılmalı.

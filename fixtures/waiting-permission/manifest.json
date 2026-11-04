@@ -1,0 +1,22 @@
+{
+  "name": "waiting-permission",
+  "description": "Bash izni bekleyen tek session (status waiting).",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "expect": {
+    "sessions": 1,
+    "statuses": {
+      "2372ca6c-4a3c-4976-b221-4ce4d67bde8a": "waiting"
+    },
+    "totals": {
+      "waiting": 1
+    },
+    "waitingFor": {
+      "2372ca6c-4a3c-4976-b221-4ce4d67bde8a": {
+        "tool": "Bash",
+        "label": "npm run db:migrate"
+      }
+    }
+  }
+}

@@ -1,0 +1,230 @@
+/* Orta alanın geçici 2B görünümü (Sprint 2). 03/05 3B haritayla değiştirir. */
+
+.map2d {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+.map2d-b {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 40px 14px 44px;
+}
+.hint,
+.legend {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  pointer-events: none;
+  background: rgba(11, 14, 19, 0.85);
+  padding: 5px 8px;
+  border-radius: 6px;
+  z-index: 1;
+}
+.hint {
+  left: 10px;
+  top: 10px;
+}
+.legend {
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.legend i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+
+.pgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.pcard {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--line2);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.pc-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 10px 12px 8px;
+}
+.pc-h b {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.pc-path,
+.pc-sum {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  flex-basis: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pc-sum {
+  color: var(--muted);
+}
+.pc-conf {
+  color: var(--slow);
+}
+.tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: #c9b2ff;
+  background: #22183a;
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.pc-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 10px 10px;
+}
+
+.scard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+  border: 1px solid var(--line2);
+  border-left: 3px solid var(--line2);
+  border-radius: 8px;
+  background: var(--panel2);
+  padding: 8px 10px;
+  cursor: pointer;
+  min-width: 0;
+}
+.scard:hover {
+  border-color: #3a4458;
+}
+.scard.st-busy {
+  border-left-color: var(--busy);
+}
+.scard.st-waiting {
+  border-left-color: var(--wait);
+  background: var(--wait-bg);
+}
+.scard.st-idle {
+  border-left-color: var(--idle);
+}
+.scard.st-ended {
+  opacity: 0.55;
+}
+.scard.sel {
+  box-shadow: 0 0 0 2px var(--fg);
+}
+.sc-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.sc-top b {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.sc-top kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+}
+.sc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+}
+.sc-ctx {
+  height: 3px;
+  background: #232a36;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.sc-ctx > span {
+  display: block;
+  height: 100%;
+  background: var(--busy);
+  opacity: 0.7;
+}
+.sc-ctx.warn > span {
+  background: var(--slow);
+  opacity: 1;
+}
+
+.center-state {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 24px;
+}
+.center-state p {
+  margin: 0;
+  max-width: 460px;
+  line-height: 1.6;
+}
+.center-state code {
+  font-family: var(--font-mono);
+  background: var(--panel2);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.progress {
+  width: 180px;
+  height: 2px;
+  background: var(--line);
+  overflow: hidden;
+  border-radius: 1px;
+}
+.progress i {
+  display: block;
+  width: 40%;
+  height: 100%;
+  background: var(--busy);
+  animation: slide 1.2s ease-in-out infinite;
+}
+@keyframes slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}

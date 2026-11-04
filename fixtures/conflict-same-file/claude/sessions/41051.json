@@ -1,0 +1,13 @@
+{
+  "pid": 41051,
+  "sessionId": "7b698e43-bdb1-4571-9688-de635ecf86b8",
+  "cwd": "/Users/demo/Projects/demo-1",
+  "name": "brief-cache",
+  "kind": "interactive",
+  "entrypoint": "cli",
+  "status": "idle",
+  "waitingFor": null,
+  "startedAt": 1767256800000,
+  "updatedAt": 1767257045700,
+  "statusUpdatedAt": 1767257045700
+}

@@ -1,0 +1,211 @@
+/* Menü çubuğu açılır listesi (06/01). Koyu tema token'ları tokens.css'ten; .a-now / .kchip detail.css'ten. */
+.popover-body {
+  user-select: none;
+}
+.pv {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border: 1px solid var(--line2);
+}
+.pv-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.pv-title {
+  font-weight: 600;
+}
+.pv-summary {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.pv-summary.t-wait {
+  color: var(--wait);
+}
+.pv-summary.t-busy {
+  color: var(--busy);
+}
+.pv-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+.pv-row {
+  display: flex;
+  align-items: stretch;
+  border-left: 2px solid transparent;
+}
+.pv-row.st-waiting {
+  border-left-color: var(--wait);
+  background: var(--wait-bg);
+}
+.pv-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 6px 8px 12px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.pv-main:hover,
+.pv-map:hover {
+  background: var(--panel2);
+}
+.pv-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.pv-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.pv-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.pv-proj {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.pv-bg {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 0 5px;
+  border: 1px solid var(--line2);
+  border-radius: 4px;
+  color: var(--muted);
+}
+.pv-key {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  flex: none;
+}
+.pv-main .a-now {
+  padding-left: 15px;
+}
+.pv-map {
+  flex: none;
+  width: 34px;
+  border: 0;
+  background: none;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 15px;
+}
+.pv-map:hover {
+  color: var(--fg);
+}
+.pv-empty {
+  flex: 1 1 auto;
+  padding: 28px 22px;
+  color: var(--dim);
+  line-height: 1.5;
+  text-align: center;
+}
+.pv-error {
+  margin: 0 10px 8px;
+  padding: 7px 10px;
+  border: 1px solid #5a1f1f;
+  border-radius: 6px;
+  background: var(--slow-bg);
+  color: var(--slow);
+  font-size: 12px;
+}
+.pv-limits {
+  display: grid;
+  gap: 5px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.pv-limits.stale {
+  opacity: 0.45;
+}
+.pv-limit {
+  display: grid;
+  /* Sabit son sütun: iki çubuk aynı genişlikte kalsın (sıfırlanma saati "18:11" ya da "Cmt 16:11"). */
+  grid-template-columns: 40px 1fr 34px 64px;
+  gap: 8px;
+  align-items: center;
+}
+.pv-limit-label,
+.pv-limit-reset {
+  color: var(--dim);
+}
+.pv-limit-pct,
+.pv-limit-reset {
+  text-align: right;
+}
+.pv-limit-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: #1a2030;
+  overflow: hidden;
+}
+.pv-limit-bar i {
+  display: block;
+  height: 100%;
+  background: var(--busy);
+}
+.pv-limit.l-warn .pv-limit-bar i {
+  background: var(--wait);
+}
+.pv-limit.l-warn .pv-limit-pct {
+  color: var(--wait);
+}
+.pv-limit.l-crit .pv-limit-bar i {
+  background: var(--slow);
+}
+.pv-limit.l-crit .pv-limit-pct {
+  color: var(--slow);
+}
+.pv-foot {
+  display: flex;
+  gap: 6px;
+  padding: 10px;
+  border-top: 1px solid var(--line);
+}
+.pv-foot button {
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  background: var(--panel);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.pv-foot button:hover {
+  background: var(--panel2);
+}
+.pv-foot .pv-quit {
+  margin-left: auto;
+  color: var(--dim);
+}

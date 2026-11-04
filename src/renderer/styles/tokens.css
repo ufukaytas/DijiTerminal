@@ -1,0 +1,62 @@
+/* Tek koyu tema token'ları — Session Board 3D prototipiyle aynı (00/03).
+   Durum ve kategori renkleri src/shared/constants.ts ile aynı olmalı; tests/shared/tokens.test.ts denetler. */
+:root {
+  color-scheme: dark;
+  --bg: #0b0e13;
+  --panel: #0f131a;
+  --panel2: #141922;
+  --line: #1f2632;
+  --line2: #2a3240;
+  --fg: #e4e8ef;
+  --muted: #aeb8cc;
+  --dim: #808a9c;
+  --busy: #5eb3ff;
+  --wait: #f2b134;
+  --idle: #4cc38a;
+  --ended: #5a6478;
+  --slow: #ff7a6b;
+  --read: #5eb3ff;
+  --search: #5eb3ff;
+  --edit: #c98bff;
+  --bash: #ff9f5a;
+  --web: #4cc38a;
+  --browser: #7dd3c0;
+  --agent: #e4e8ef;
+  --mcp: #a5b4fc;
+  --plan: #8a94a6;
+  --wait-bg: #1b1709;
+  --slow-bg: #2a1414;
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  overflow: hidden;
+}
+button {
+  font: inherit;
+  color: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--busy);
+  outline-offset: 2px;
+}
+.dim {
+  color: var(--dim);
+}
+.mono {
+  font-family: var(--font-mono);
+}

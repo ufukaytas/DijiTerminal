@@ -1,0 +1,13 @@
+{
+  "pid": 41061,
+  "sessionId": "2a617014-4377-4b30-ac48-781bdf4c8739",
+  "cwd": "/Users/demo/Projects/demo-voice",
+  "name": "vad",
+  "kind": "interactive",
+  "entrypoint": "cli",
+  "status": "busy",
+  "waitingFor": null,
+  "startedAt": 1767256800000,
+  "updatedAt": 1767256800000,
+  "statusUpdatedAt": 1767256800000
+}

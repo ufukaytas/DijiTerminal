@@ -1,0 +1,14 @@
+{
+  "name": "api-error",
+  "description": "isApiErrorMessage ve system/api_error kayıtları; çökme yok.",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "expect": {
+    "sessions": 1,
+    "statuses": {
+      "cb2afa6c-b334-47c5-9c04-c91b803d2d92": "idle"
+    },
+    "logErrors": 2
+  }
+}

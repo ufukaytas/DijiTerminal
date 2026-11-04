@@ -1,0 +1,17 @@
+{
+  "name": "fork-resume",
+  "description": "Resume ile yeni sessionId; eski kayıtlar aynı uuid ile tekrarlanır.",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "expect": {
+    "sessions": 1,
+    "statuses": {
+      "19e3acd3-2f21-4ed7-9101-7f59b606bb69": "idle"
+    },
+    "superseded": {
+      "899c58b8-b0ab-44fa-be26-76a32fefbe75": "19e3acd3-2f21-4ed7-9101-7f59b606bb69"
+    },
+    "toolCalls": 3
+  }
+}

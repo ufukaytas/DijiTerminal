@@ -1,0 +1,15 @@
+# DijiTerminal bildirim ayarları (uygulama kapalıyken geçerli)
+# Konum: ~/Library/Application Support/DijiTerminal/notify.conf
+# Yalnızca KEY=değer satırları. Değişiklik bir sonraki olayda geçerli olur.
+
+# Onay (izin) bekleyen session için bildirim: 1 açık, 0 kapalı
+WAITING=1
+
+# Uzun bir tur bittiğinde bildirim: 1 açık, 0 kapalı
+DONE=1
+
+# "Bitti" bildirimi için turun en az kaç saniye sürmüş olması gerekir
+DONE_MIN_SEC=30
+
+# Bildirim sesi (/System/Library/Sounds altındaki ad: Glass, Ping, Pop, Hero…). Sessiz için boş bırakın: SOUND=
+SOUND=Glass

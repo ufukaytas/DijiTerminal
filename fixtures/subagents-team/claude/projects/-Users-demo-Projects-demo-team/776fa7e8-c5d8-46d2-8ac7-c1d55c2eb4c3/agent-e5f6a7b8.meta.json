@@ -1,0 +1,6 @@
+{
+  "description": "linkedin taslağı",
+  "agentType": "pipeline-linkedin-writer",
+  "model": "inherit",
+  "requestShape": "foreground"
+}

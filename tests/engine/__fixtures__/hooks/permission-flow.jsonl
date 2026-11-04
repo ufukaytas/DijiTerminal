@@ -1,0 +1,5 @@
+{"v":1,"ts":1793160000000,"event":"UserPromptSubmit","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":"/dev/ttys004","claudePid":41001}
+{"v":1,"ts":1793160000800,"event":"PreToolUse","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":"/dev/ttys004","claudePid":41001,"tool":"Bash"}
+{"v":1,"ts":1793160000900,"event":"Notification","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":"/dev/ttys004","claudePid":41001,"message":"Claude needs your permission to use Bash","notificationType":"permission_prompt"}
+{"v":1,"ts":1793160005000,"event":"PostToolUse","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":"/dev/ttys004","claudePid":41001,"tool":"Bash"}
+{"v":1,"ts":1793160009000,"event":"Stop","sessionId":"c1c1c1c1-0000-4000-8000-000000000001","cwd":"/Users/demo/Projects/demo-app","tty":"/dev/ttys004","claudePid":41001}

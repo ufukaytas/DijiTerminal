@@ -1,0 +1,18 @@
+{
+  "name": "basic-two-sessions",
+  "description": "2 proje, 2 session, birer Read/Edit/Bash turu; ikisi de boşta.",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "expect": {
+    "sessions": 2,
+    "statuses": {
+      "bd3f9d14-24a3-49dc-9820-231026de98ea": "idle",
+      "669bb4eb-f9dd-45c8-9072-ab94106a4bee": "idle"
+    },
+    "totals": {
+      "liveSessions": 2,
+      "waiting": 0
+    }
+  }
+}

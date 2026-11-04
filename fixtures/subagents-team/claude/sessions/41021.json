@@ -1,0 +1,13 @@
+{
+  "pid": 41021,
+  "sessionId": "776fa7e8-c5d8-46d2-8ac7-c1d55c2eb4c3",
+  "cwd": "/Users/demo/Projects/demo-team",
+  "name": "HQ",
+  "kind": "interactive",
+  "entrypoint": "cli",
+  "status": "busy",
+  "waitingFor": null,
+  "startedAt": 1767256800000,
+  "updatedAt": 1767256800000,
+  "statusUpdatedAt": 1767256800000
+}

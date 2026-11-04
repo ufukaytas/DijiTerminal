@@ -1,0 +1,21 @@
+{
+  "name": "slow-tool",
+  "description": "4 dakikadır sonuçlanmamış Bash çağrısı.",
+  "source": "synthetic",
+  "now": "2026-01-01T09:00:00.000Z",
+  "pidAliveOverride": true,
+  "expect": {
+    "sessions": 1,
+    "statuses": {
+      "2a617014-4377-4b30-ac48-781bdf4c8739": "busy"
+    },
+    "flags": {
+      "2a617014-4377-4b30-ac48-781bdf4c8739": [
+        "slow-tool"
+      ]
+    },
+    "totals": {
+      "slowTools": 1
+    }
+  }
+}

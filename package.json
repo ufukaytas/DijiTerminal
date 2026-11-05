@@ -3,7 +3,7 @@
   "productName": "DijiTerminal",
   "version": "0.3.1",
   "private": true,
-  "description": "iTerm2'de paralel çalışan Claude Code session'larını ikinci monitörden takip etmek için macOS uygulaması",
+  "description": "Paralel çalışan Claude Code session'larını ikinci monitörden takip etmek için macOS uygulaması; iTerm2 ve Terminal'de tek tıkla sekmeye geçiş",
   "author": "Ufuk Aytaş",
   "license": "MIT",
   "main": "out/main/index.js",

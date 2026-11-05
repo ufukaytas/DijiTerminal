@@ -1,5 +1,6 @@
 // iTerm2 / Terminal.app sekmesine odaklanma — 04/01.
 // Script'ler sabit; tty yalnızca argv ile geçer ve önce regex ile doğrulanır.
+import { terminalAppAccusative, terminalAppName } from '@shared/terminalApp';
 import type { TerminalApp, TerminalRef } from '@shared/types';
 import { defineScript, runAppleScript, type AppleScriptResult, type AppleScriptSource } from './applescript';
 
@@ -124,11 +125,9 @@ export class TerminalFocuser {
   }
 }
 
-const APP_NAME: Record<TerminalApp, string> = { iterm2: 'iTerm2', terminal: 'Terminal', other: 'Terminal', unknown: 'Terminal' };
-
 /** FocusResult hatası → kullanıcıya gösterilecek Türkçe mesaj (04/01 Bölüm 7). */
 export function focusErrorMessage(r: Extract<FocusResult, { ok: false }>, requested: TerminalApp): string {
-  const name = APP_NAME[r.app ?? requested];
+  const name = terminalAppName(r.app ?? requested);
   switch (r.reason) {
     case 'no-tty':
       return 'Bu session bir terminale bağlı değil.';
@@ -137,7 +136,7 @@ export function focusErrorMessage(r: Extract<FocusResult, { ok: false }>, reques
     case 'not-found':
       return requested === 'other' ? 'Sekme bulunamadı (tmux içinde olabilir).' : 'Sekme bulunamadı; session kapanmış olabilir.';
     case 'permission': {
-      const acc = name === 'iTerm2' ? "iTerm2'yi" : "Terminal'i"; // belirtme hâli eki
+      const acc = terminalAppAccusative(r.app ?? requested);
       return `${acc} kontrol etme izni yok. Sistem Ayarları > Gizlilik ve Güvenlik > Otomasyon'dan DijiTerminal için ${acc} açın.`;
     }
     case 'timeout':

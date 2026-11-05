@@ -178,7 +178,7 @@ export function HistoryDialog({ onClose }: { onClose(): void }) {
         )}
         <p className="note">
           Yalnızca arka plan session&apos;ları (claude --bg, /bg). Konuşmalar silinmez; &quot;Aktif et&quot;
-          session&apos;ı haritaya geri getirir ve burada açar. iTerm2 session&apos;ları için:{' '}
+          session&apos;ı haritaya geri getirir ve burada açar. Etkileşimli (iTerm2 / Terminal) session&apos;lar için:{' '}
           <code>claude --resume</code>.
         </p>
       </div>

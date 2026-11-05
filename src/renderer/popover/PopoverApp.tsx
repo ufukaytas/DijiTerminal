@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { STATUS_COLOR } from '@shared/constants';
 import type { DijiApi, TrayCommand } from '@shared/ipc';
+import { focusLabel } from '@shared/terminalApp';
 import type { UsageLimits } from '@shared/types';
 import { AgentNow } from '../components/AgentNow';
 import { useNow } from '../hooks/useNow';
@@ -37,7 +38,7 @@ const Row = memo(function Row({
         type="button"
         className="pv-main"
         onClick={() => onFocus(s.id)}
-        title={s.background ? 'Uygulamada aç (arka plan session\'ı)' : 'iTerm2 sekmesine git'}
+        title={s.background ? 'Uygulamada aç (arka plan session\'ı)' : focusLabel(s.terminal?.app)}
       >
         <span className="pv-line">
           <span className="pv-dot" style={{ background: STATUS_COLOR[s.status] }} aria-label={STATUS_LABEL[s.status]} />

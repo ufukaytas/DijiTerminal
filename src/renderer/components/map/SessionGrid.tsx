@@ -138,7 +138,7 @@ export function EmptyState() {
         </>
       ) : (
         <p>
-          Henüz çalışan Claude Code session&apos;ı yok. iTerm2&apos;de <code>claude</code> başlattığınızda burada görünür.
+          Henüz çalışan Claude Code session&apos;ı yok. iTerm2 ya da Terminal&apos;de <code>claude</code> başlattığınızda burada görünür.
         </p>
       )}
       {hooks && !hooks.installed && (

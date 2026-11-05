@@ -165,7 +165,7 @@ function TerminalSection({ value }: { value: AppSettings }) {
       <Check
         id="set-term-on"
         label="Arka plan session'larını uygulamada aç"
-        hint="claude --bg ya da /bg ile başlatılan session'lar; iTerm2 session'ları iTerm2'de kalır"
+        hint="claude --bg ya da /bg ile başlatılan session'lar; etkileşimli session'lar kendi terminalinde (iTerm2 / Terminal) kalır"
         checked={value.terminal.enabled}
         onChange={(v) => void update({ terminal: { enabled: v } }, 'terminal')}
       />

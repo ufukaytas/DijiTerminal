@@ -15,10 +15,7 @@ export async function focusTerminal(sessionId: string): Promise<boolean> {
     return false;
   }
   if (res.ok) return true;
-  pushToast(
-    'error',
-    res.error.code === 'PERMISSION' ? "iTerm2'yi kontrol etmek için Otomasyon izni gerekiyor." : res.error.message,
-  );
+  pushToast('error', res.error.message); // main'de session'ın terminaline göre (iTerm2 / Terminal)
   return false;
 }
 
@@ -29,7 +26,7 @@ export function openInApp(sessionId: string): Promise<boolean> {
 
 /**
  * Haritada çift tıklama / Enter: arka plan session'ı ve terminal kullanılabilirse uygulamada açar,
- * değilse iTerm2 sekmesine gider (07/01).
+ * değilse terminal sekmesine (iTerm2 / Terminal) gider (07/01).
  */
 export function activateSession(sessionId: string): Promise<boolean> {
   const s = useBoard.getState().snapshot.sessions.find((x) => x.id === sessionId);

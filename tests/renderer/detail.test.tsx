@@ -121,7 +121,19 @@ describe('DetailPanel', () => {
     await act(async () => {
       fireEvent.click(btn);
     });
-    expect(useToasts.getState().toasts.at(-1)?.message).toBe("iTerm2'yi kontrol etmek için Otomasyon izni gerekiyor.");
+    // Mesaj main'de terminale göre üretilir (focusErrorMessage); renderer aynen gösterir.
+    expect(useToasts.getState().toasts.at(-1)?.message).toBe('izin yok');
+  });
+
+  it('Terminal.app session\'ında düğme "Terminal sekmesine git"', () => {
+    const snap = makeSnapshot(NOW);
+    const sessions = snap.sessions.map((s) =>
+      s.id === IDS.waiting && s.terminal ? { ...s, terminal: { ...s.terminal, app: 'terminal' as const } } : s,
+    );
+    act(() => useBoard.getState().setSnapshot({ ...snap, sessions }));
+    render(<DetailPanel />);
+    expect(screen.getByRole('button', { name: /Terminal sekmesine git/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /iTerm2 sekmesine git/ })).toBeNull();
   });
 
   it('terminal yoksa buton pasif ve not görünür', () => {
@@ -130,7 +142,7 @@ describe('DetailPanel', () => {
       useBoard.getState().select(IDS.idle);
     });
     render(<DetailPanel />);
-    expect((screen.getByRole('button', { name: /iTerm2 sekmesine git/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: /Terminal sekmesine git/ }) as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByText('Terminal bulunamadı')).toBeTruthy();
   });
 

@@ -56,7 +56,7 @@ mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     # 04/01: macOS Otomasyon (Apple Events) izin isteminde görünen açıklama. Bu satır yoksa istem hiç çıkmaz.
-    NSAppleEventsUsageDescription: "DijiTerminal, seçtiğiniz Claude Code session'ının iTerm2 sekmesini öne getirmek için iTerm2'yi kontrol eder."
+    NSAppleEventsUsageDescription: "DijiTerminal, seçtiğiniz Claude Code session'ının sekmesini öne getirmek için iTerm2'yi veya Terminal'i kontrol eder."
     LSUIElement: false
     LSMinimumSystemVersion: "13.0"
 dmg:

@@ -5,6 +5,13 @@ Sürümün tek kaynağı `package.json`; `.dmg` adı ve Hakkında penceresi orad
 
 ## [Yayımlanmadı]
 
+## [0.3.1] - 2026-11-05
+
+macOS Terminal desteği görünür oldu.
+
+### Değişti
+- Sekmeye git düğmesi session'ın terminaline göre adlanır: "iTerm2 sekmesine git" ya da "Terminal sekmesine git" (macOS Terminal'de sekmeye geçiş zaten çalışıyordu; etiket, izin mesajları ve README yalnızca iTerm2 diyordu).
+
 ## [0.3.0] - 2026-11-05
 
 Uyumluluk kalkanı, session kapatma ve geçmiş.

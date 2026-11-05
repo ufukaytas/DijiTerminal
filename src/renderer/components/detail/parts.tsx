@@ -1,7 +1,8 @@
 // Seçili session panelinin parçaları (03/02). Her biri memo'lu; zamanla değişen metinler <Elapsed> içinde.
 import { memo, useEffect, useRef, useState } from 'react';
 import { STATUS_COLOR, THRESHOLDS } from '@shared/constants';
-import type { ProjectView, SessionFlag, SessionStatus, SessionView } from '@shared/types';
+import { focusLabel } from '@shared/terminalApp';
+import type { ProjectView, SessionFlag, SessionStatus, SessionView, TerminalApp } from '@shared/types';
 import { fmtCost, fmtHotkey, fmtPct, fmtTokens } from '../../lib/format';
 import { openInApp } from '../../state/actions';
 import { StopSessionButton } from '../terminal/StopSessionButton';
@@ -170,12 +171,13 @@ export const FlagChips = memo(
 type BtnState = 'idle' | 'pending' | 'done';
 const DONE_MS = 1500;
 
-/** "iTerm2 sekmesine git" ve "Finder'da aç". Snapshot akarken DOM düğümleri yerinde kalır (hover/odak korunur). */
+/** "iTerm2 sekmesine git" / "Terminal sekmesine git" ve "Finder'da aç". Snapshot akarken DOM düğümleri yerinde kalır (hover/odak korunur). */
 export const Actions = memo(function Actions({
   sessionId,
   projectId,
   waiting,
   hasTerminal,
+  terminalApp = null,
   hotkey,
   ended,
   background = false,
@@ -184,6 +186,8 @@ export const Actions = memo(function Actions({
   projectId: string;
   waiting: boolean;
   hasTerminal: boolean;
+  /** Session'ın bağlı olduğu terminal uygulaması; düğme etiketi buna göre. */
+  terminalApp?: TerminalApp | null;
   hotkey: number | null;
   ended: boolean;
   /** 07/01: arka plan session'ı → "Uygulamada aç" birincil eylem. */
@@ -212,10 +216,8 @@ export const Actions = memo(function Actions({
       timer.current = setTimeout(() => setFocusState('idle'), DONE_MS);
     } else {
       setFocusState('idle');
-      pushToast(
-        'error',
-        res.error.code === 'PERMISSION' ? "iTerm2'yi kontrol etmek için Otomasyon izni gerekiyor." : res.error.message,
-      );
+      // Mesaj main'de session'ın terminaline göre üretilir (iTerm2 / Terminal).
+      pushToast('error', res.error.message);
     }
   };
 
@@ -274,7 +276,7 @@ export const Actions = memo(function Actions({
         disabled={disabled}
         aria-busy={focusState === 'pending' || undefined}
       >
-        <span>{focusState === 'done' ? 'Açıldı' : 'iTerm2 sekmesine git'}</span>
+        <span>{focusState === 'done' ? 'Açıldı' : focusLabel(terminalApp)}</span>
         {key && <kbd>{key}</kbd>}
       </button>
       {!hasTerminal && !ended && <p className="note">Terminal bulunamadı</p>}

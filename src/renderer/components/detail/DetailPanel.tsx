@@ -50,6 +50,7 @@ export function DetailPanel() {
           projectId={session.projectId}
           waiting={session.status === 'waiting'}
           hasTerminal={session.terminal !== null}
+          terminalApp={session.terminal?.app ?? null}
           hotkey={session.hotkey}
           ended={ended}
           background={!missing && session.background !== null}

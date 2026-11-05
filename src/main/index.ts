@@ -35,6 +35,7 @@ import { fakePtySpawn } from './terminal/fakePty';
 import { nodePtySpawn } from './terminal/nodePty';
 import { createMainWindow, type MainWindowController } from './window';
 import { loadWindowState } from './window-state';
+import { terminalAppName } from '@shared/terminalApp';
 
 /**
  * Uygulama bildirimleri devralır mı? Devralırsa app.lock yazılır ve Faz 1 hook'ları (01/03) susar.
@@ -294,12 +295,12 @@ function handlers(): Partial<IpcHandlers> {
         return s.terminal;
       },
       focus: (ref) => focuser.focus(ref),
-      onPermissionDenied: () => {
+      onPermissionDenied: (termApp) => {
         if (permissionWarned) return; // oturum başına bir kez
         permissionWarned = true;
         send('app:toast', {
           level: 'warn',
-          message: "Sistem Ayarları > Gizlilik ve Güvenlik > Otomasyon'dan DijiTerminal'e iTerm2 izni verin.",
+          message: `Sistem Ayarları > Gizlilik ve Güvenlik > Otomasyon'dan DijiTerminal'e ${terminalAppName(termApp)} izni verin.`,
           action: { id: 'open-automation-settings', label: 'Ayarları aç' },
         });
       },

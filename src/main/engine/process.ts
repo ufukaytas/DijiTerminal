@@ -23,6 +23,8 @@ export interface ProcessInspectorLike {
   onSample(cb: () => void): () => void;
   /** Pencere görünmüyorken (05/02) örnekleme seyrekleşir; görünür olunca hemen örnekler. */
   setSlow?(slow: boolean): void;
+  /** 09/01: terminale bağlı Claude Code süreç sayısı (son taze örnek); örnek yoksa null. */
+  claudeCount?(): number | null;
 }
 
 /** Gizliyken örnekleme aralığı ve bayatlık eşiği bu katsayıyla çarpılır (05/02: güvenlik poll'ları 3 kat seyrek). */
@@ -115,6 +117,15 @@ export function resolveTerminal(pid: number, table: Map<number, ProcRow>): Termi
 export function isClaudeProcess(row: ProcRow): boolean {
   const base = path.basename(row.comm).toLowerCase();
   return base.startsWith('claude') || base === 'node' || base === 'bun' || /^\d+\.\d+\.\d+/.test(base);
+}
+
+/**
+ * 09/01 çelişki sinyali için katı eşleşme: süreç adı `claude*` ya da sürüm numarası (yerel kurulum) ve terminale bağlı.
+ * `node`/`bun` sayılmaz (başka araçlar olabilir); tty'siz süreçler (daemon, arka plan işçisi) registry yazmayabilir.
+ */
+export function isInteractiveClaude(row: ProcRow): boolean {
+  const base = path.basename(row.comm).toLowerCase();
+  return (base.startsWith('claude') || /^\d+\.\d+\.\d+/.test(base)) && normalizeTty(row.tty) !== null;
 }
 
 export type ExecFn = (cmd: string, args: readonly string[]) => Promise<string>;
@@ -230,6 +241,14 @@ export class ProcessInspector implements ProcessInspectorLike {
   onSample(cb: () => void): () => void {
     this.listeners.add(cb);
     return () => this.listeners.delete(cb);
+  }
+
+  claudeCount(): number | null {
+    const fresh = this._lastOkAt > 0 && this.now() - this._lastOkAt <= this.staleMs * (this.slow ? SLOW_FACTOR : 1);
+    if (!fresh) return null;
+    let n = 0;
+    for (const r of this.table.values()) if (isInteractiveClaude(r)) n++;
+    return n;
   }
 
   childrenOf(pid: number): number[] {

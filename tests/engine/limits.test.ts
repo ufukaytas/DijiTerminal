@@ -104,9 +104,18 @@ describe('LimitsReader', () => {
   it('dizin izleme: atomik rename sonrası debounce ile okunur', async () => {
     const { file, r, changes } = make({ watch: true });
     await r.start();
-    put(file, 'only-week.json');
+    // macOS FSEvents akışı fs.watch döndükten sonra asenkron başlar; yük altında ilk rename kaçabiliyordu.
+    // Üretimde yoklama yedeği var; burada (pollMs 0) olay gelene kadar atomik yazma yinelenir.
     const t0 = Date.now();
-    while (changes.length === 0 && Date.now() - t0 < 2000) await new Promise((res) => setTimeout(res, 20));
+    let last = 0;
+    while (changes.length === 0 && Date.now() - t0 < 5000) {
+      if (Date.now() - last >= 500) {
+        put(file, 'only-week.json');
+        last = Date.now();
+      }
+      await new Promise((res) => setTimeout(res, 20));
+    }
+    expect(changes).toHaveLength(1);
     expect(changes[0]?.week?.pct).toBe(88.2);
   });
 });

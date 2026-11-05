@@ -36,6 +36,13 @@ export function isStale(l: UsageLimits, now: number): boolean {
   return now - l.at > LIMITS_STALE_MS;
 }
 
+/** statusLine JSON'unda `rate_limits` nesnesi var mı (09/01: çözümlenemeyen statusLine ayrımı). */
+export function hasRateLimits(json: unknown): boolean {
+  if (!json || typeof json !== 'object') return false;
+  const rl = (json as Record<string, unknown>)['rate_limits'];
+  return !!rl && typeof rl === 'object';
+}
+
 export function sameLimits(a: UsageLimits | null, b: UsageLimits | null): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
@@ -165,9 +172,13 @@ export class LimitsReader extends EventEmitter {
     try {
       json = JSON.parse(text);
     } catch {
+      this.emit('unparsed'); // 09/01 uyumluluk sinyali (manual modda da: motor dinleyicileri stop'ta kaldırır)
       return; // bozuk/yarım JSON: önceki değer korunur
     }
-    this.set(parseLimits(json, mtime));
+    const v = parseLimits(json, mtime);
+    // rate_limits hiç yoksa normal (API anahtarı kullanıcısı); var ama okunamıyorsa format değişmiş olabilir.
+    if (v === null && hasRateLimits(json)) this.emit('unparsed');
+    this.set(v);
   }
 
   private set(v: UsageLimits | null): void {

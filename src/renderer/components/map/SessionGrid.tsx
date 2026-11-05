@@ -9,6 +9,7 @@ import { pushToast } from '../../state/toast';
 import { AgentNow } from '../AgentNow';
 import { STATUS_LABEL } from '../detail/parts';
 import { mapScope } from '../../lib/mapScope';
+import { emptyMapWarning } from '../../lib/compat';
 
 const SessionCard = memo(function SessionCard({
   session,
@@ -96,6 +97,11 @@ export function Loading() {
 }
 
 export function EmptyState() {
+  // 09/01: süreç var ama session dosyası yok → boş haritanın nedeni büyük olasılıkla format uyumsuzluğu.
+  const compatError = useBoard((s) => {
+    const c = s.snapshot.compat;
+    return c?.signals.some((x) => x.id === 'processWithoutSession') ? (c.claudeVersion ?? '') : null;
+  });
   const [hooks, setHooks] = useState<HookInstallStatus | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
@@ -122,9 +128,19 @@ export function EmptyState() {
 
   return (
     <div className="center-state">
-      <p>
-        Henüz çalışan Claude Code session&apos;ı yok. iTerm2&apos;de <code>claude</code> başlattığınızda burada görünür.
-      </p>
+      {compatError !== null ? (
+        <>
+          <p className="compat-empty" role="alert">
+            {emptyMapWarning(compatError || null)}
+          </p>
+          {/* "Henüz çalışan session yok" burada yanlış olur: süreç tablosu claude'un çalıştığını gösteriyor. */}
+          <p>Ayrıntı ve paylaşılabilir rapor için üst bardaki ⚠ Uyumluluk rozetine tıklayın.</p>
+        </>
+      ) : (
+        <p>
+          Henüz çalışan Claude Code session&apos;ı yok. iTerm2&apos;de <code>claude</code> başlattığınızda burada görünür.
+        </p>
+      )}
       {hooks && !hooks.installed && (
         <button
           type="button"

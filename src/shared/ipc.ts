@@ -100,6 +100,10 @@ export interface IpcInvokeMap {
   'session:history': { args: []; result: IpcResult<BackgroundHistoryItem[]> };
   /** Geçmişten yeniden aktif et (haritaya döner); renderer ardından `term:open` ile açar. */
   'session:restoreBackground': { args: [bgId: string]; result: IpcResult<{ sessionId: string }> };
+  /** 09/01: yalnızca şema içeren uyumluluk raporunu panoya yazar. */
+  'compat:copyReport': { args: []; result: IpcResult<null> };
+  /** 09/01: raporla önceden doldurulmuş GitHub issue'yu tarayıcıda açar (rapor ayrıca panoya yazılır). */
+  'compat:openIssue': { args: []; result: IpcResult<{ truncated: boolean }> };
 }
 
 /** `term:open` sonucu. */
@@ -168,6 +172,8 @@ export const IPC_CHANNELS = {
     'session:stopBackground',
     'session:history',
     'session:restoreBackground',
+    'compat:copyReport',
+    'compat:openIssue',
   ] as const satisfies readonly InvokeChannel[],
   events: [
     'board:snapshot',

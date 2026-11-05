@@ -69,5 +69,7 @@ export function stubHandlers(): IpcHandlers {
     'session:stopBackground': notReady,
     'session:history': notReady,
     'session:restoreBackground': notReady,
+    'compat:copyReport': notReady,
+    'compat:openIssue': notReady,
   };
 }

@@ -2,7 +2,7 @@
 // global kısayollar 04/03, ayarlar 00/04, menü çubuğu modu 06/01.
 import os from 'node:os';
 import path from 'node:path';
-import { app, dialog, globalShortcut, Menu, Notification, screen, shell, type BrowserWindow } from 'electron';
+import { app, clipboard, dialog, globalShortcut, Menu, Notification, screen, shell, type BrowserWindow } from 'electron';
 import { formatAccelerator } from '@shared/accelerator';
 import { ok, TRAY_COMMANDS, type IpcEventMap, type TrayCommand } from '@shared/ipc';
 import { changedKeys } from '@shared/settings';
@@ -14,6 +14,7 @@ import {
   createHookHandlers,
   createSettingsHandlers,
   createTerminalHandlers,
+  createCompatHandlers,
   createToastActionHandlers,
   createWindowHandlers,
 } from './handlers';
@@ -304,6 +305,12 @@ function handlers(): Partial<IpcHandlers> {
       },
     }),
     ...createToastActionHandlers({ openExternal: (url) => shell.openExternal(url) }),
+    ...createCompatHandlers({
+      report: () => host?.engine.getSnapshot().compat ?? null,
+      env: () => ({ appVersion: app.getVersion(), osVersion: `macOS ${process.getSystemVersion()} (${process.arch})` }),
+      writeClipboard: (text) => clipboard.writeText(text),
+      openExternal: (url) => shell.openExternal(url),
+    }),
     'shortcuts:status': async () => ok(shortcuts ? shortcuts.report() : { enabled: false, items: [] }),
     'tray:command': async (cmd: TrayCommand, sessionId?: string) => {
       if (!TRAY_COMMANDS.includes(cmd))

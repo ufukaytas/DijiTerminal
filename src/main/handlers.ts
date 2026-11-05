@@ -1,6 +1,7 @@
 // Pencere ve eylem IPC handler'ları (00/03, 03/02). Electron'a doğrudan bağımlı değil:
 // yan etkiler bağımlılık olarak gelir, böylece girdi doğrulaması node ortamında test edilir.
 import { fail, ok, SESSION_ID_RE, TOAST_ACTION_IDS, type IpcErrorCode, type IpcResult, type ToastActionId } from '@shared/ipc';
+import { buildCompatMarkdown, buildIssueUrl, type CompatEnv, type CompatReport } from '@shared/compat';
 import type { SettingsPatch } from '@shared/settings';
 import type { AppSettings, HookInstallStatus, TerminalApp, TerminalRef } from '@shared/types';
 import type { IpcHandlers } from './ipc';
@@ -75,6 +76,38 @@ export function createTerminalHandlers(deps: TerminalDeps): Pick<IpcHandlers, 'a
       if (r.ok) return ok({ app: r.app });
       if (r.reason === 'permission') deps.onPermissionDenied?.(r.app ?? ref.app);
       return fail(FAILURE_CODE[r.reason], focusErrorMessage(r, ref.app));
+    },
+  };
+}
+
+// ---------- 09/01: uyumluluk raporu ----------
+
+export interface CompatDeps {
+  /** Motorun son raporu; demo motorunda ya da henüz yoksa null. */
+  report(): CompatReport | null;
+  env(): CompatEnv;
+  writeClipboard(text: string): void;
+  openExternal(url: string): Promise<void>;
+}
+
+export function createCompatHandlers(deps: CompatDeps): Pick<IpcHandlers, 'compat:copyReport' | 'compat:openIssue'> {
+  return {
+    'compat:copyReport': async () => {
+      const r = deps.report();
+      if (!r) return fail('NOT_FOUND', 'Uyumluluk raporu yok.');
+      deps.writeClipboard(buildCompatMarkdown(r, deps.env()));
+      return ok(null);
+    },
+    'compat:openIssue': async () => {
+      const r = deps.report();
+      if (!r) return fail('NOT_FOUND', 'Uyumluluk raporu yok.');
+      const env = deps.env();
+      const md = buildCompatMarkdown(r, env);
+      // Gövde URL sınırında kısaltılabilir: tam rapor her durumda panoda olsun.
+      deps.writeClipboard(md);
+      const { url, truncated } = buildIssueUrl(r, env, md);
+      await deps.openExternal(url);
+      return ok({ truncated });
     },
   };
 }

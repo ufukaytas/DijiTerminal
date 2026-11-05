@@ -76,6 +76,10 @@ export function sameProcessStart(token: string, recorded: string): boolean | nul
   if (/^\d+$/.test(a) && /^\d+$/.test(b)) return false; // Linux saat tıkı
   const ta = Date.parse(a);
   const tb = Date.parse(b);
-  if (Number.isFinite(ta) && Number.isFinite(tb)) return Math.abs(ta - tb) <= 1000;
-  return null;
+  if (!Number.isFinite(ta) || !Number.isFinite(tb)) return null;
+  if (Math.abs(ta - tb) <= 1000) return true;
+  // Claude Code 2.1.3xx procStart'ı UTC yazıyor (`ps lstart` TZ=UTC), `ps` burada yerel saatle çalışıyor.
+  // Kayıt UTC ise yerel saat diye parse edilen değer saat dilimi farkı kadar kayar: farkı çıkarıp yeniden karşılaştır.
+  const asUtc = tb - new Date(tb).getTimezoneOffset() * 60_000;
+  return Math.abs(ta - asUtc) <= 1000;
 }

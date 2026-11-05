@@ -52,6 +52,8 @@ Birden fazla Claude Code session'ı aynı anda çalıştırınca asıl zaman kay
 
 **Gereksinimler:** macOS 13 veya üzeri · [iTerm2](https://iterm2.com) · [Claude Code](https://claude.com/claude-code)
 
+Tested with Claude Code 2.1.288–2.1.318. Daha yeni bir Claude Code dosya biçimini değiştirirse üst barda sarı **⚠ Uyumluluk** rozeti çıkar; panelden yalnızca şema bilgisi içeren bir rapor kopyalayıp issue açabilirsiniz.
+
 1. [Son sürümden](https://github.com/ufukaytas/DijiTerminal/releases/latest) Mac'inize uygun `.dmg`'yi indirin — **arm64** (Apple Silicon) ya da **x64** (Intel) — ve DijiTerminal'i **Applications** klasörüne sürükleyin. Sürümler Developer ID ile imzalı ve Apple tarafından notarize edilmiştir.
 2. Uygulamayı açın, **Ayarlar (⌘,) › Hook'lar** bölümünden Claude Code hook'larını ve status line'ı kurun. Hook'lar onay bekleme ve tur bitişi gibi anlık durumları, status line ise kullanım limitlerini getirir; kurulum `~/.claude/settings.json`'a yalnızca DijiTerminal girdilerini ekler ve aynı yerden kaldırılabilir.
 3. İlk "iTerm2 sekmesine git" tıklamasında macOS iTerm2'yi kontrol izni ister → **İzin Ver**. Reddettiyseniz: Sistem Ayarları › Gizlilik ve Güvenlik › Otomasyon › DijiTerminal › iTerm.
@@ -80,6 +82,7 @@ Motor saf Node ile yazılmıştır ve Electron'dan bağımsız olarak test edili
 
 - **Tamamen yerel.** Ağ erişimi, telemetri ve otomatik güncelleme yoktur; prompt'larınız ve kodunuz Mac'inizden çıkmaz.
 - **Salt okunur.** `~/.claude` altındaki dosyalar yalnızca okunur; tek yazma işlemi, sizin onayınızla yapılan hook kurulumudur.
+- **Uyumluluk raporu yalnızca şema içerir.** Kayıt tipleri, anahtar adları ve sayılar; değer, dosya yolu, prompt ya da kimlik yoktur. Uygulama raporu kendisi göndermez: issue sayfası sizin tıklamanızla tarayıcınızda açılır.
 - **Neden App Store'da değil?** Uygulama `~/.claude`'u okumak ve iTerm2'yi `osascript` ile kontrol etmek için App Sandbox dışında çalışır; Mac App Store bunu kabul etmez. Bu yüzden Developer ID ile imzalanıp notarize edilerek doğrudan dağıtılır.
 
 ## Geliştirme

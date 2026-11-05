@@ -7,6 +7,7 @@ import { limitsView } from '../lib/limits';
 import { useBoard, useProjects, useTotals } from '../state/board';
 import { useSettings } from '../state/settings';
 import { useTerminals } from '../state/terminals';
+import { CompatBadge } from './CompatBadge';
 import { HistoryDialog } from './terminal/HistoryDialog';
 import { NewSessionDialog } from './terminal/NewSessionDialog';
 
@@ -127,6 +128,7 @@ export function Header() {
       </div>
       <Chips totals={totals} booted={booted} />
       <Limits limits={limits} />
+      <CompatBadge />
       {connection === 'error' && <span className="chip c-slow">motor bağlantısı yok</span>}
       <div className="spacer" />
       <ProjectSegment projects={projects} focus={focus} onFocus={setFocus} />

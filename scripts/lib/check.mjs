@@ -212,3 +212,54 @@ export function validateScenarios(root) {
   }
   return out;
 }
+
+const TYPE_UNION = /^(array|bigint|boolean|null|number|object|string|undefined)(\|(array|bigint|boolean|null|number|object|string|undefined))*$/;
+
+/**
+ * 09/01 şema golden'ları (fixtures/compat/schema-*.json): yalnızca şema içermeli.
+ * Her string yaprak bir tip birleşimi ('string|null') olmalı (claudeVersion hariç); anahtarlar kısa ve cümle değil.
+ * @param {string} root fixtures/ @returns {{ dir: string, problem: string }[]}
+ */
+export function validateCompatSchemas(root) {
+  /** @type {{ dir: string, problem: string }[]} */
+  const out = [];
+  const dir = path.join(root, 'compat');
+  if (!fs.existsSync(dir)) return out;
+  for (const name of fs.readdirSync(dir).sort()) {
+    if (!name.endsWith('.json')) continue;
+    const where = `compat/${name}`;
+    if (!/^schema-\d+\.\d+\.\d+\.json$/.test(name)) {
+      out.push({ dir: where, problem: 'dosya adı schema-<sürüm>.json değil' });
+      continue;
+    }
+    let j;
+    try {
+      j = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+    } catch {
+      out.push({ dir: where, problem: 'JSON okunamadı' });
+      continue;
+    }
+    let bad = 0;
+    /** @param {unknown} v @param {string} key @param {number} depth */
+    const visit = (v, key, depth) => {
+      if (bad) return;
+      if (typeof v === 'string') {
+        const okVersion = depth === 1 && key === 'claudeVersion' && /^\d+\.\d+\.\d+$/.test(v);
+        if (!okVersion && !TYPE_UNION.test(v)) bad++;
+      } else if (Array.isArray(v)) {
+        bad++; // şema özetinde dizi yok
+      } else if (v && typeof v === 'object') {
+        for (const [k, x] of Object.entries(v)) {
+          if (k.length > 400 || isReadableSentence(k)) {
+            bad++;
+            return;
+          }
+          visit(x, k, depth + 1);
+        }
+      }
+    };
+    visit(j, '', 0);
+    if (bad) out.push({ dir: where, problem: 'şema dışı değer içeriyor (yalnızca anahtar adları, tipler ve sayılar olmalı)' });
+  }
+  return out;
+}

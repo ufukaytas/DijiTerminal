@@ -431,3 +431,41 @@
   animation: none !important;
   transition: none !important;
 }
+
+/* ---- 09/01 uyumluluk rozeti ve paneli ---- */
+button.chip.compat {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+button.chip.compat:hover {
+  filter: brightness(1.2);
+}
+.compat-panel {
+  width: min(640px, calc(100vw - 32px));
+}
+.compat-panel h2.lv-warn {
+  color: var(--wait);
+}
+.compat-panel h2.lv-error {
+  color: var(--slow);
+}
+.compat-summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.compat-table tr.lv-error td:first-child {
+  color: var(--slow);
+}
+.compat-table tr.lv-warn td:first-child {
+  color: var(--wait);
+}
+.compat-table td.mono {
+  overflow-wrap: anywhere;
+}
+.center-state .compat-empty {
+  color: var(--slow);
+  max-width: 460px;
+}

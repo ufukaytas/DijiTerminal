@@ -3,6 +3,7 @@
 // Yan etkisiz: durum (tekrar önleme, son meta) dışarıdan NormalizeCtx.state ile verilir. Dosya erişimi yok.
 import { categoryOf } from '@shared/constants';
 import type { EngineEvent, NormalizeCtx } from './events';
+import { SKIP_TYPES } from './transcript/prefilter';
 import { fmtBytes, safeText, summarizeTool } from './summarize';
 
 type Rec = Record<string, unknown>;
@@ -28,21 +29,44 @@ export const IGNORED_TYPES: ReadonlySet<string> = new Set([
   'tools-used',
   'cost-state',
   'fork-context-ref',
+  // 2026-11 (Claude Code 2.1.318, compat:snapshot): API istek kayıtları, ad/sahiplik, dosya geçmişi deltası, worktree.
+  'api-request',
+  'api-request-blob',
+  'api-request-shape',
+  'agent-name',
+  'session-owner',
+  'file-history-delta',
+  'relocated',
+  'worktree-state',
+  'bridge-session',
+  'artifact-autoreact-ledger',
+  'artifact-comment-monitor',
+  // Prefilter (02/02) bunları bayt düzeyinde atar; ama "type" alanı satırın ilk 600 baytından sonra gelirse
+  // kayıt buraya ulaşır (gerçek veride `attachment`). Aynı tipler burada da bilinçli olarak yok sayılır.
+  ...SKIP_TYPES,
 ]);
 
 export function normalizeRecord(rec: Rec, ctx: NormalizeCtx): EngineEvent[] {
+  const sink = ctx.state.sink;
+  sink?.record();
   const type = str(rec.type);
   if (type && IGNORED_TYPES.has(type)) return [];
   const handler = type ? HANDLERS[type] : undefined;
   if (!handler) {
     const key = type ?? '(tipsiz)';
     ctx.state.unknownTypes[key] = (ctx.state.unknownTypes[key] ?? 0) + 1;
+    sink?.unknownType(key, rec);
     return [];
   }
 
-  const sessionId = str(rec.sessionId) ?? ctx.sessionId;
+  const recSessionId = str(rec.sessionId);
+  const sessionId = recSessionId ?? ctx.sessionId;
   const agentId = ctx.agentId ?? (rec.isSidechain === true ? (str(rec.agentId) ?? null) : null);
   const ts = Date.parse(str(rec.timestamp) ?? '') || 0;
+  if (sink && EXPECTS_ENVELOPE.has(type as string)) {
+    if (!recSessionId) sink.missingKey('sessionId');
+    if (ts === 0) sink.missingKey('timestamp');
+  }
   const base: Base = { sessionId, agentId, ts };
   const uuid = str(rec.uuid);
   if (uuid) base.uuid = uuid;
@@ -68,6 +92,12 @@ const HANDLERS: Record<string, Handler> = {
   user: onUser,
   system: onSystem,
 };
+
+/** İşlenen kayıt tipleri (09/01 kapsama testi: HANDLED_TYPES ∪ IGNORED_TYPES ∪ SKIP_TYPES). */
+export const HANDLED_TYPES: ReadonlySet<string> = new Set(Object.keys(HANDLERS));
+
+/** sessionId + timestamp zarfı beklenen tipler (ai-title / last-prompt gibi meta kayıtlarında yok). */
+const EXPECTS_ENVELOPE: ReadonlySet<string> = new Set(['assistant', 'user', 'system']);
 
 /** cwd / gitBranch değiştiyse session-meta (yalnızca ana ajan). */
 function metaFromLocation(rec: Rec, base: Base, ctx: NormalizeCtx, out: EngineEvent[]): void {
@@ -117,6 +147,11 @@ function onAssistant(rec: Rec, base: Base, ctx: NormalizeCtx, out: EngineEvent[]
   if (rec.isApiErrorMessage === true || model === '<synthetic>') {
     out.push({ ...base, type: 'api-error', message: safe(textOf(content), LIMITS.error) || 'API hatası' });
     return;
+  }
+  const sink = ctx.state.sink;
+  if (sink) {
+    if (!model) sink.missingKey('message.model');
+    if (!isObj(m.usage)) sink.missingKey('message.usage');
   }
 
   if (base.agentId === null) {

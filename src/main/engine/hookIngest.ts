@@ -410,6 +410,8 @@ export class HookIngest extends EventEmitter {
           console.warn('[hookIngest] desteklenmeyen satır sürümü; bu satırlar atlanıyor');
         }
         this.counters.bad++;
+        // 09/01: CompatMonitor sayar (geçersiz satır / desteklenmeyen satır sürümü).
+        this.emit('bad', { unsupportedVersion: r.unsupportedVersion === true });
         if (++this.bad % BAD_WARN_EVERY === 0) console.warn(`[hookIngest] ${this.bad} geçersiz satır atlandı`);
         continue;
       }

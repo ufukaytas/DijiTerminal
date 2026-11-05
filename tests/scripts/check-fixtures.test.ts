@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
-import { isReadableSentence, lineRules, scanPaths, validateScenarios } from '../../scripts/lib/check.mjs';
+import { isReadableSentence, lineRules, scanPaths, validateCompatSchemas, validateScenarios } from '../../scripts/lib/check.mjs';
 import { SCENARIOS } from '../../scripts/lib/scenarios.mjs';
 import { REPO_ROOT, tmpDir } from './_tmp';
 
@@ -136,5 +136,30 @@ describe('check-fixtures CLI', () => {
     expect(code).toBe(1);
     expect(stderr).toMatch(/home-path/);
     expect(stderr).not.toContain('alice');
+  });
+});
+
+describe('validateCompatSchemas (09/01)', () => {
+  const golden = (body: unknown) => {
+    const root = tmpDir();
+    write(root, 'compat/schema-2.1.318.json', JSON.stringify(body));
+    return root;
+  };
+  it('yalnızca anahtar adı, tip ve sayı → temiz', () => {
+    const root = golden({ claudeVersion: '2.1.318', registry: { files: 0, keys: { pid: 'number', cwd: 'string|null' } }, transcripts: { recordTypes: { assistant: 3 } } });
+    expect(validateCompatSchemas(root)).toEqual([]);
+  });
+  it('değer içeren yaprak, dizi ya da cümle anahtar → bulgu', () => {
+    expect(validateCompatSchemas(golden({ registry: { keys: { cwd: '/Users/demo/x' } } }))).toHaveLength(1);
+    expect(validateCompatSchemas(golden({ registry: { keys: ['pid'] } }))).toHaveLength(1);
+    expect(validateCompatSchemas(golden({ x: { 'lütfen bu müşteri kaydını hemen sil ve herkese haber ver': 1 } }))).toHaveLength(1);
+  });
+  it('dosya adı biçimi', () => {
+    const root = tmpDir();
+    write(root, 'compat/latest.json', '{}');
+    expect(validateCompatSchemas(root)[0]?.problem).toContain('schema-<sürüm>.json');
+  });
+  it('repodaki golden temiz', () => {
+    expect(validateCompatSchemas(path.join(REPO_ROOT, 'fixtures'))).toEqual([]);
   });
 });

@@ -6,7 +6,7 @@
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dirSize, scanPaths, validateScenarios } from './lib/check.mjs';
+import { dirSize, scanPaths, validateCompatSchemas, validateScenarios } from './lib/check.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -17,7 +17,7 @@ const roots = targets.length ? targets.map((t) => path.resolve(t)) : [fixturesDi
 
 const t0 = Date.now();
 const findings = scanPaths(roots, { strictSentences: strict });
-const structural = targets.length ? [] : validateScenarios(fixturesDir);
+const structural = targets.length ? [] : [...validateScenarios(fixturesDir), ...validateCompatSchemas(fixturesDir)];
 const size = targets.length ? 0 : dirSize(fixturesDir);
 const LIMIT = 3 * 1024 * 1024;
 

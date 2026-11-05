@@ -66,7 +66,44 @@ interface CacheItem {
   reuseDead: boolean;
   /** pid reuse kontrolü bu pid için yapıldı mı. */
   startChecked: boolean;
+  /** Dosyadaki ham status (09/01 uyumluluk: bilinmeyen değer sayımı); parse edilemediyse null. */
+  rawStatus: string | null;
 }
+
+/** 09/01: registry'nin format sağlığı (CompatMonitor girdisi). Yalnızca sayılar ve enum benzeri status adları. */
+export interface RegistryHealth {
+  /** sessions/ altındaki <pid>.json dosyaları. */
+  files: number;
+  /** pid + sessionId okunabilen kayıtlar (tür ayırmadan). */
+  parsed: number;
+  /** Okunabilen ve süreci canlı kayıtlar (tür ayırmadan; spare/hosted dahil). */
+  live: number;
+  /** JSON geçerli ama zorunlu alanlar (sessionId, pid) yok. */
+  shapeErrors: number;
+  /** En az JSON_STABLE_MS'dir değişmeyen ve yine de JSON olarak okunamayan dosyalar (yarım yazım değil). */
+  jsonErrors: number;
+  /** Bilinmeyen status değeri → dosya sayısı (enum biçiminde değilse ‹değer›). */
+  unknownStatus: Record<string, number>;
+}
+
+/** Ham status'un bilinen değerleri (Claude Code 2.1.318). */
+export const KNOWN_REGISTRY_STATUSES: ReadonlySet<string> = new Set(['busy', 'idle', 'waiting', 'shell']);
+
+/**
+ * Registry dosyalarında görülen ve bilinçli olarak tanınan anahtarlar (09/01 kapsama testi).
+ * Okunanlar parseEntry'de; geri kalanı UI'ın kullanmadığı ama varlığı bilinen alanlar.
+ */
+export const KNOWN_REGISTRY_KEYS: ReadonlySet<string> = new Set([
+  // okunan
+  'sessionId', 'pid', 'kind', 'jobId', 'spare', 'hostSessionId', 'status', 'waitingFor', 'name', 'nameSource', 'cwd',
+  'entrypoint', 'startedAt', 'updatedAt', 'statusUpdatedAt', 'procStart',
+  // bilinen, kullanılmayan
+  'version', 'nameSince', 'formerNames', 'pidDomain', 'peerProtocol', 'peerFeatures', 'messagingSocketPath',
+  'asksForConvertedSkills',
+]);
+
+/** Bozuk JSON bu kadar süre değişmeden kalırsa yarım yazım değil, format sorunu sayılır. */
+const JSON_STABLE_MS = 2000;
 
 const FILE_RE = /^\d+\.json$/;
 const PID_REUSE_TOLERANCE_MS = 5000;
@@ -78,6 +115,8 @@ function toMs(v: unknown): number | null {
   return v < 1e12 ? Math.round(v * 1000) : v;
 }
 const str = (v: unknown): string | null => (typeof v === 'string' && v.length > 0 ? v : null);
+/** Status değeri rapora yalnızca kısa enum biçimindeyse girer. */
+const statusName = (v: string): string => (v.length <= 32 && /^[a-z_][a-z0-9_-]*$/i.test(v) ? v : '‹değer›');
 
 /**
  * Tüm alan erişimleri burada (format değişirse tek nokta).
@@ -168,6 +207,8 @@ export class RegistryWatcher extends EventEmitter {
   private readonly procStartToken: (pid: number) => Promise<string | null>;
 
   private cache = new Map<string, CacheItem>();
+  /** JSON olarak okunamayan dosyalar → mtime (cache'e yazılmazlar; her taramada yeniden denenir). */
+  private badJson = new Map<string, number>();
   private current = new Map<string, RegistryEntry>();
   private watcher: FSWatcher | null = null;
   private timer: NodeJS.Timeout | null = null;
@@ -213,6 +254,30 @@ export class RegistryWatcher extends EventEmitter {
 
   list(): RegistryEntry[] {
     return [...this.current.values()];
+  }
+
+  /** 09/01: format sağlığı (son taramaya göre; canlılık anlık). */
+  health(): RegistryHealth {
+    const h: RegistryHealth = { files: this.cache.size, parsed: 0, live: 0, shapeErrors: 0, jsonErrors: 0, unknownStatus: {} };
+    for (const item of this.cache.values()) {
+      if (item.pid === null) {
+        h.shapeErrors++;
+        continue;
+      }
+      h.parsed++;
+      if (!item.reuseDead && this.isAlive(item.pid)) h.live++;
+      if (item.rawStatus !== null && !KNOWN_REGISTRY_STATUSES.has(item.rawStatus)) {
+        const k = statusName(item.rawStatus);
+        h.unknownStatus[k] = (h.unknownStatus[k] ?? 0) + 1;
+      }
+    }
+    // mtime dosya sisteminin saati: motorun (testte sahte) saatiyle değil, duvar saatiyle karşılaştırılır.
+    const wall = Date.now();
+    for (const [name, mtime] of this.badJson) {
+      if (!this.cache.has(name)) h.files++;
+      if (wall - mtime >= JSON_STABLE_MS) h.jsonErrors++;
+    }
+    return h;
   }
 
   get(sessionId: string): RegistryEntry | undefined {
@@ -281,8 +346,10 @@ export class RegistryWatcher extends EventEmitter {
         parsed = parseEntry(JSON.parse(await fs.promises.readFile(file, 'utf8')), file);
       } catch {
         // Yarım yazılmış dosya: cache'e yazma, sonraki taramada tekrar dene.
+        this.badJson.set(name, st.mtimeMs);
         continue;
       }
+      this.badJson.delete(name);
       const item: CacheItem = {
         mtimeMs: st.mtimeMs,
         entry: parsed && parsed.interactive ? parsed.entry : null,
@@ -291,6 +358,7 @@ export class RegistryWatcher extends EventEmitter {
         interactive: parsed ? parsed.interactive : false,
         reuseDead: false,
         startChecked: false,
+        rawStatus: parsed ? parsed.entry.rawStatus : null,
       };
       if (prev && prev.pid === item.pid) {
         // Aynı süreç: pid reuse kararı geçerliliğini korur.
@@ -312,6 +380,7 @@ export class RegistryWatcher extends EventEmitter {
       this.cache.set(name, item);
     }
     for (const name of [...this.cache.keys()]) if (!present.has(name)) this.cache.delete(name);
+    for (const name of [...this.badJson.keys()]) if (!present.has(name)) this.badJson.delete(name);
 
     // Canlı ve filtreyi geçen kayıtlar; aynı sessionId için updatedAt büyük olan kazanır.
     const next = new Map<string, RegistryEntry>();

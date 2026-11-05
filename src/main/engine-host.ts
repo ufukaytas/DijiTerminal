@@ -37,6 +37,18 @@ export interface EngineHost {
 }
 
 /** Gömülü terminal kapalıysa ya da claude bulunamadıysa poller CLI çağırmaz (07/01). */
+/** 09/01: `claude --version` (ClaudeCli önbelleği); bulunamazsa null → panelde "bilinmiyor". */
+function claudeVersionOf(cli: ClaudeCli): () => Promise<string | null> {
+  return async () => {
+    try {
+      const r = await cli.resolve();
+      return r.ok ? r.cli.version : r.version;
+    } catch {
+      return null;
+    }
+  };
+}
+
 function agentsPoller(cli: ClaudeCli, settings: (() => AppSettings) | undefined): AgentsPoller {
   return new AgentsPoller({
     cli: async () => {
@@ -79,6 +91,7 @@ export function createEngineHost(opts: EngineHostOptions): EngineHost {
         inspector: new ProcessInspector(), // 02/06: tty + terminal uygulaması (04/01 sekmeye gitme)
         ...(opts.settings ? { settings: opts.settings } : {}),
         ...(opts.cli ? { agents: agentsPoller(opts.cli, opts.settings) } : {}),
+        ...(opts.cli ? { claudeVersion: claudeVersionOf(opts.cli) } : {}),
         dismissedBackground: loadDismissed(dataDir),
         onDismissedChange: (ids) => saveDismissed(dataDir, ids),
       });

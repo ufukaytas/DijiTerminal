@@ -1,6 +1,7 @@
 // Motorun iç olay tipleri
 // Ham transcript kayıtları normalizeRecord() ile bu olaylara çevrilir; motorun geri kalanı ham kayıt görmez.
 import type { ToolCategory } from '@shared/types';
+import type { CompatSink } from './compat';
 
 interface EvBase {
   sessionId: string;
@@ -75,6 +76,8 @@ export interface NormalizerState {
   unknownTypes: Record<string, number>;
   /** sessionId → son yayınlanan meta değerleri (yalnızca değişince session-meta üretilir). */
   lastMeta: Map<string, { cwd?: string; branch?: string; model?: string; effort?: string }>;
+  /** 09/01: uyumluluk tanılaması (motor bağlar; testlerde yok). */
+  sink?: CompatSink;
 }
 
 export interface NormalizeCtx {

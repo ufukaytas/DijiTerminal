@@ -1,0 +1,40 @@
+name: Claude Code uyumluluğu
+description: Yeni bir Claude Code sürümünden sonra harita boş ya da eksik (⚠ Uyumluluk rozeti).
+title: "Uyumluluk: Claude Code "
+labels: ["compat"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Uygulamadaki **⚠ Uyumluluk › Rapor kopyala** çıktısı yalnızca şema bilgisi içerir (kayıt tipleri, anahtar adları, sayılar).
+        Lütfen prompt, dosya yolu ya da kod eklemeyin.
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code sürümü
+      description: "`claude --version`"
+      placeholder: "2.1.318"
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: DijiTerminal sürümü
+      description: Üst barda, uygulama adının yanında.
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Uyumluluk raporu
+      description: "Uyumluluk panelindeki “Rapor kopyala” çıktısını buraya yapıştırın (issue sayfası uygulamadan açıldıysa bu alan zaten doludur)."
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Ne görüyorsunuz?
+      description: Boş harita, eksik ajanlar, yanlış durum renkleri…
+    validations:
+      required: false

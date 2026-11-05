@@ -8,6 +8,7 @@ import { DEFAULT_SETTINGS } from '@shared/settings';
 import type { AppSettings, BackgroundHistoryItem, BoardEvent, BoardSnapshot, UsageLimits } from '@shared/types';
 import type { AgentMeta } from './agent-runtime';
 import { systemClock, type Clock } from './clock';
+import { CompatMonitor } from './compat';
 import { createNormalizerState, type NormalizerState } from './events';
 import type { GitRoots } from './git';
 import { HookIngest, type HookFs, type HookTransition } from './hookIngest';
@@ -50,6 +51,8 @@ export interface SessionEngineOptions {
   /** 07/01: kullanıcının kapattığı arka plan kimlikleri (açılışta) ve değişince kaydetme. */
   dismissedBackground?: string[];
   onDismissedChange?: (ids: string[]) => void;
+  /** 09/01: kurulu Claude Code sürümü (`claude --version`); uyumluluk panelinde bilgi satırı. */
+  claudeVersion?: () => Promise<string | null>;
   /** true: zamanlayıcı ve dosya izleyici kurulmaz; ilerletme pumpNow() ile (testler). */
   manual?: boolean;
 }
@@ -106,6 +109,7 @@ export class SessionEngine implements BoardEngine {
   private limits: LimitsReader | null = null;
   private urgentTimer: NodeJS.Timeout | null = null;
   private normState: NormalizerState = createNormalizerState();
+  private compat!: CompatMonitor;
 
   private snapshotCbs = new Set<(s: BoardSnapshot) => void>();
   private eventCbs = new Set<(e: BoardEvent[]) => void>();
@@ -126,8 +130,8 @@ export class SessionEngine implements BoardEngine {
   }
 
   /** Test ve tanılama: alt bileşenler. */
-  get internals(): { store: BoardStore; pool: TranscriptPool; registry: RegistryWatcher; tracker: SubagentTracker; paths: ClaudePaths; normalizer: NormalizerState } {
-    return { store: this.store, pool: this.pool, registry: this.registry, tracker: this.tracker, paths: this.paths, normalizer: this.normState };
+  get internals(): { store: BoardStore; pool: TranscriptPool; registry: RegistryWatcher; tracker: SubagentTracker; paths: ClaudePaths; normalizer: NormalizerState; compat: CompatMonitor } {
+    return { store: this.store, pool: this.pool, registry: this.registry, tracker: this.tracker, paths: this.paths, normalizer: this.normState, compat: this.compat };
   }
 
   private build(): void {
@@ -135,6 +139,8 @@ export class SessionEngine implements BoardEngine {
     const now = () => this.clock.now();
     this.paths = resolveClaudePaths(o.configDir, o.home);
     this.normState = createNormalizerState();
+    this.compat = new CompatMonitor({ now });
+    this.normState.sink = this.compat;
     this.registry = new RegistryWatcher(this.paths, {
       now,
       ...(o.isAlive ? { isAlive: o.isAlive } : {}),
@@ -199,8 +205,19 @@ export class SessionEngine implements BoardEngine {
     }
     await this.settle();
 
+    this.observeCompat();
     this.inspector.start();
-    this.unsubs.push(this.inspector.onSample(() => this.applyProcesses()));
+    this.unsubs.push(
+      this.inspector.onSample(() => {
+        this.applyProcesses();
+        this.observeCompat();
+      }),
+    );
+    const cv = this.opts.claudeVersion;
+    if (cv) {
+      const compat = this.compat;
+      this.track(cv().then((v) => compat.setClaudeVersion(v)));
+    }
     const agents = this.opts.agents;
     if (agents) {
       this.unsubs.push(
@@ -353,6 +370,7 @@ export class SessionEngine implements BoardEngine {
    */
   async pumpNow(): Promise<BoardSnapshot> {
     await this.registry.refresh();
+    this.observeCompat();
     await this.settle();
     await this.pool.pumpAll();
     await this.settle();
@@ -376,6 +394,7 @@ export class SessionEngine implements BoardEngine {
   private async startLimits(): Promise<void> {
     const lr = this.limits;
     if (!lr) return;
+    lr.on('unparsed', () => this.compat.statusLineUnparsed());
     lr.on('change', (l: UsageLimits | null) => {
       this.store.setLimits(l);
       if (this.running && this.store.isBooted()) this.publishSnapshot(true);
@@ -397,6 +416,7 @@ export class SessionEngine implements BoardEngine {
     ing.on('transition', (t: HookTransition) => this.onHook(t));
     ing.on('drain', () => this.onHookDrain());
     ing.on('status', () => this.store.markDirty());
+    ing.on('bad', (b: { unsupportedVersion: boolean }) => this.compat.hookBadLine(b.unsupportedVersion));
     try {
       if (this.opts.manual) await ing.readNow();
       else await ing.start();
@@ -439,7 +459,14 @@ export class SessionEngine implements BoardEngine {
 
   private decorate(s: BoardSnapshot): BoardSnapshot {
     s.fastStatus = this.ingest ? this.ingest.status() : 'off';
+    s.compat = this.compat.report();
     return s;
+  }
+
+  /** 09/01: registry sağlığı ve süreç ↔ registry çelişkisi (registry değişince ve her ps örneğinde). */
+  private observeCompat(): void {
+    this.compat.setRegistry(this.registry.health());
+    this.compat.observeProcesses(this.inspector.claudeCount?.() ?? null);
   }
 
   private every(ms: number, fn: () => void): void {
@@ -526,6 +553,7 @@ export class SessionEngine implements BoardEngine {
       if (e.cwd) this.track(this.pool.ensure(transcriptPathFor(e.cwd, e.sessionId, this.paths)));
     }
     this.applyProcesses();
+    this.observeCompat();
   }
 
   private applyProcesses(): void {

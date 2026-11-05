@@ -1,7 +1,7 @@
 {
   "name": "dijiterminal",
   "productName": "DijiTerminal",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "iTerm2'de paralel çalışan Claude Code session'larını ikinci monitörden takip etmek için macOS uygulaması",
   "author": "Ufuk Aytaş",
@@ -38,6 +38,7 @@
     "hooks:status": "node scripts/install-hooks.mjs status",
     "fixtures:make": "node scripts/make-fixtures.mjs",
     "fixtures:check": "node scripts/check-fixtures.mjs",
+    "compat:snapshot": "node scripts/compat-snapshot.mjs",
     "replay": "node scripts/replay.mjs",
     "bench:transcripts": "node scripts/bench-transcripts.mjs",
     "bench": "node scripts/bench.mjs",

@@ -97,9 +97,17 @@ describe('SettingsStore', () => {
     const s = new SettingsStore({ dir });
     stores.push(s);
     s.load();
-    const changed = new Promise<boolean>((resolve) => s.onChange((n) => resolve(n.notifications.sound)));
-    fs.writeFileSync(path.join(dir, 'settings.json'), JSON.stringify({ notifications: { sound: true } }));
-    await expect(changed).resolves.toBe(true);
+    let got: boolean | null = null;
+    s.onChange((n) => (got = n.notifications.sound));
+    // macOS'ta libuv'nin FSEvents akışı fs.watch döndükten sonra ayrı thread'de asenkron başlar; paralel test
+    // yükünde hemen ardından gelen yazma kaybolabiliyordu (~%10 kırılma). Gerçek düzenleme açılıştan çok
+    // sonra olur; test bu yüzden olay gelene kadar aynı yazmayı yineler. Yinelenen yazma ikinci bildirim üretmez.
+    const t0 = Date.now();
+    while (got === null && Date.now() - t0 < 5000) {
+      fs.writeFileSync(path.join(dir, 'settings.json'), JSON.stringify({ notifications: { sound: true } }));
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    expect(got).toBe(true);
   });
 });
 

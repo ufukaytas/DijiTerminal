@@ -5,10 +5,19 @@ Sürümün tek kaynağı `package.json`; `.dmg` adı ve Hakkında penceresi orad
 
 ## [Yayımlanmadı]
 
+## [0.3.0] - 2026-11-05
+
+Uyumluluk kalkanı, session kapatma ve geçmiş.
+
 ### Değişti
 - İmzalı sürümde `.dmg`'ler de imzalanıp notarize ediliyor (`scripts/notarize-dmg.mjs`); bağımlılıkların kaynak haritaları (`.map`) artık pakete girmiyor.
 
+### Düzeltildi
+- **Boş harita (Claude Code 2.1.3xx):** Claude Code registry'deki `procStart`'ı artık UTC yazıyor; UTC dışındaki saat dilimlerinde canlı session'lar "pid yeniden kullanılmış" sayılıp haritadan düşüyordu. Kayıt UTC ise saat dilimi farkı hesaba katılıyor.
+- Prefilter'ın atladığı kayıt tipleri (`attachment` vb.) `type` alanı satırın başında değilse tanınmayan kayıt sayılıyordu.
+
 ### Eklendi
+- **Uyumluluk kalkanı (09/01):** Claude Code dosya biçimini değiştirince üst barda **⚠ Uyumluluk** rozeti çıkar (sarı: tanınmayan kayıt tipleri, eksik alanlar, okunamayan session dosyaları, geçersiz hook satırları, çözümlenemeyen statusLine; kırmızı: Claude Code çalışıyor ama 60 sn boyunca hiç session dosyası yok). Panel neyin bozulduğunu, Claude Code sürümünü ve test edilen aralığı gösterir. "Rapor kopyala" yalnızca şema bilgisi (kayıt tipleri, anahtar adları, sayılar) içeren bir Markdown üretir; "GitHub'da issue aç" raporu önceden doldurulmuş issue formuna taşır (tarayıcıda, sizin tıklamanızla). "Bu oturumda gizle" yeni bir sinyal türü gelene kadar rozeti gizler. Geliştirici tarafı: `npm run compat:snapshot` şema golden'ı (`fixtures/compat/`) ve her kayıt tipinin işlendiğini ya da bilinçli olarak yok sayıldığını doğrulayan kapsama testi. Test edilen aralık: Claude Code 2.1.288–2.1.318 (bu aralıktaki tüm yerel transcript'ler tanınmayan tip ve eksik alan olmadan işlendi).
 - **Session'ı kapat:** detay panelinde ve terminal çubuğunda. Çalışan arka plan session'ı `claude stop` ile durdurulur; bitmiş ya da uyuyan session yalnızca haritadan kaldırılır (uygulama hatırlar). Konuşma silinmez, `claude attach <id>` ile dönülebilir; session yeniden çalışırsa haritaya geri gelir. İki adımlı onay.
 - **Geçmiş:** üst bardaki saat ikonu haritada olmayan arka plan session'larını listeler (kapatılan, durdurulan, başarısız, 24 saatten eski); ada, klasöre ya da kimliğe göre aranır. "Aktif et" session'ı haritaya geri getirir ve gömülü terminalde açar; "Kopyala" `claude attach <id>` komutunu kopyalar.
 

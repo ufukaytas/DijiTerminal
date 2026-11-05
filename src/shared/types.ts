@@ -1,6 +1,7 @@
 // Ortak domain tipleri
 // Bu dosya saf TypeScript'tir: main, preload ve renderer aynı tipleri paylaşır.
 // Alan adları diğer brief'lerde referans alınır; değiştirmeden önce brief'leri güncelleyin.
+import type { CompatReport } from './compat';
 
 /** Bir session'ın UI'daki durumu. */
 export type SessionStatus = 'busy' | 'waiting' | 'idle' | 'ended';
@@ -231,6 +232,8 @@ export interface BoardSnapshot {
    * 'error' okunamıyor, 'off' bu motorda yok (demo). Eski snapshot'larda alan olmayabilir.
    */
   fastStatus?: 'active' | 'missing' | 'error' | 'off';
+  /** 09/01 Claude Code format uyumluluğu. Yalnızca değişince yeniden üretilir; demo motorunda yok (= ok). */
+  compat?: CompatReport;
 }
 
 /** 3B efektler ve anlık UI tepkileri için olay akışı. */
